@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, Mail, Lock, User, Check, ArrowLeft, Sparkles } from "lucide-react";
+import { NoIndexSEO } from "@/components/layout/SEO";
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -113,6 +114,7 @@ export default function Signup() {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500">
+            <NoIndexSEO title="Sign up" />
             {/* Background effects */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div

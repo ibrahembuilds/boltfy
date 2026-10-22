@@ -1,75 +1,261 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import {
+  SITE,
+  absoluteAssetUrl,
+  absoluteUrl,
+  sitePath,
+} from "@/lib/site";
+
+type RobotsDirective = "index, follow" | "noindex, nofollow" | "noindex, follow";
 
 interface SEOProps {
-    title: string;
-    description?: string;
-    keywords?: string;
-    image?: string;
-    url?: string;
-    type?: string;
+  title: string;
+  description?: string;
+  keywords?: string;
+  /** Path only, e.g. `/blog/my-post` — canonical and og:url are derived from SITE.url */
+  path?: string;
+  image?: string;
+  type?: "website" | "article";
+  robots?: RobotsDirective;
+  /** Article Open Graph (blog posts) */
+  article?: {
+    publishedTime?: string;
+    modifiedTime?: string;
+    author?: string;
+    section?: string;
+  };
+  /** One or more JSON-LD objects injected into `<head>` */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Append brand suffix to document title */
+  titleTemplate?: boolean;
+}
+
+const JSON_LD_ID = "boltfy-json-ld";
+
+function upsertMeta(
+  selector: string,
+  create: () => HTMLElement,
+  content: string,
+  attr: "name" | "property" = "name",
+  attrValue?: string,
+) {
+  let el = document.querySelector(selector) as HTMLMetaElement | null;
+  if (!el) {
+    el = create() as HTMLMetaElement;
+    document.head.appendChild(el);
+  }
+  if (attrValue) el.setAttribute(attr, attrValue);
+  el.setAttribute("content", content);
+}
+
+function upsertLink(rel: string, href: string) {
+  let el = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement("link");
+    el.setAttribute("rel", rel);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", href);
+}
+
+function setJsonLd(blocks: Record<string, unknown>[]) {
+  let script = document.getElementById(JSON_LD_ID) as HTMLScriptElement | null;
+  if (!blocks.length) {
+    script?.remove();
+    return;
+  }
+  if (!script) {
+    script = document.createElement("script");
+    script.id = JSON_LD_ID;
+    script.type = "application/ld+json";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(
+    blocks.length === 1 ? blocks[0] : blocks,
+  );
 }
 
 export const SEO = ({
-    title,
-    description = "Boltfy is the world's most beautiful form builder for creators and agencies. Build high-converting contact forms, lead magnets, and surveys with zero code.",
-    keywords = "form builder, online form creator, drag and drop form builder, contact form, lead collection, survey tool, beautiful forms, no-code forms, boltfy, saas form builder, dark mode forms",
-    image = "/og-image.png",
-    url = window.location.origin,
-    type = "website"
+  title,
+  description = SITE.defaultDescription,
+  keywords = SITE.defaultKeywords,
+  path,
+  image = SITE.defaultOgImagePath,
+  type = "website",
+  robots = "index, follow",
+  article,
+  jsonLd,
+  titleTemplate = true,
 }: SEOProps) => {
-    useEffect(() => {
-        // Update title
-        document.title = `${title} | Boltfy - Professional Form Builder`;
+  const location = useLocation();
+  const resolvedPath = sitePath(path ?? location.pathname);
+  const pageUrl = absoluteUrl(resolvedPath);
+  const imageUrl = absoluteAssetUrl(image);
 
-        // Standard SEO
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) metaDesc.setAttribute("content", description);
+  const jsonLdBlocks = useMemo(() => {
+    if (!jsonLd) return [];
+    return Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+  }, [jsonLd]);
 
-        // Open Graph / Facebook
-        const ogTitle = document.querySelector('meta[property="og:title"]');
-        if (ogTitle) ogTitle.setAttribute("content", title);
+  useEffect(() => {
+    const fullTitle = titleTemplate
+      ? `${title} | ${SITE.name}`
+      : title;
+    document.title = fullTitle;
+    document.documentElement.lang = SITE.language;
 
-        const ogDesc = document.querySelector('meta[property="og:description"]');
-        if (ogDesc) ogDesc.setAttribute("content", description);
+    upsertMeta('meta[name="description"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "description");
+      return m;
+    }, description);
 
-        const ogImage = document.querySelector('meta[property="og:image"]');
-        if (ogImage) ogImage.setAttribute("content", image);
+    upsertMeta('meta[name="keywords"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "keywords");
+      return m;
+    }, keywords);
 
-        const ogUrl = document.querySelector('meta[property="og:url"]');
-        if (ogUrl) ogUrl.setAttribute("content", url);
+    upsertMeta('meta[name="robots"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "robots");
+      return m;
+    }, robots);
 
-        const ogType = document.querySelector('meta[property="og:type"]');
-        if (ogType) ogType.setAttribute("content", type);
+    upsertMeta('meta[property="og:title"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("property", "og:title");
+      return m;
+    }, title);
 
-        // Twitter
-        const twTitle = document.querySelector('meta[name="twitter:title"]');
-        if (twTitle) twTitle.setAttribute("content", title);
+    upsertMeta('meta[property="og:description"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("property", "og:description");
+      return m;
+    }, description);
 
-        const twDesc = document.querySelector('meta[name="twitter:description"]');
-        if (twDesc) twDesc.setAttribute("content", description);
+    upsertMeta('meta[property="og:image"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("property", "og:image");
+      return m;
+    }, imageUrl);
 
-        const twImage = document.querySelector('meta[name="twitter:image"]');
-        if (twImage) twImage.setAttribute("content", image);
+    upsertMeta('meta[property="og:url"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("property", "og:url");
+      return m;
+    }, pageUrl);
 
-        // Keywords
-        let keywordsTag = document.querySelector('meta[name="keywords"]');
-        if (!keywordsTag) {
-            keywordsTag = document.createElement("meta");
-            keywordsTag.setAttribute("name", "keywords");
-            document.head.appendChild(keywordsTag);
-        }
-        keywordsTag.setAttribute("content", keywords);
+    upsertMeta('meta[property="og:type"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("property", "og:type");
+      return m;
+    }, type);
 
-        // Robots
-        let robotsTag = document.querySelector('meta[name="robots"]');
-        if (!robotsTag) {
-            robotsTag = document.createElement("meta");
-            robotsTag.setAttribute("name", "robots");
-            document.head.appendChild(robotsTag);
-        }
-        robotsTag.setAttribute("content", "index, follow");
+    upsertMeta('meta[property="og:site_name"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("property", "og:site_name");
+      return m;
+    }, SITE.name);
 
-    }, [title, description, image, url, type, keywords]);
+    upsertMeta('meta[property="og:locale"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("property", "og:locale");
+      return m;
+    }, SITE.locale);
 
-    return null;
+    upsertMeta('meta[name="twitter:card"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "twitter:card");
+      return m;
+    }, "summary_large_image");
+
+    upsertMeta('meta[name="twitter:title"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "twitter:title");
+      return m;
+    }, title);
+
+    upsertMeta('meta[name="twitter:description"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "twitter:description");
+      return m;
+    }, description);
+
+    upsertMeta('meta[name="twitter:image"]', () => {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "twitter:image");
+      return m;
+    }, imageUrl);
+
+    if (SITE.twitterHandle) {
+      upsertMeta('meta[name="twitter:site"]', () => {
+        const m = document.createElement("meta");
+        m.setAttribute("name", "twitter:site");
+        return m;
+      }, SITE.twitterHandle);
+    }
+
+    if (type === "article" && article?.publishedTime) {
+      upsertMeta('meta[property="article:published_time"]', () => {
+        const m = document.createElement("meta");
+        m.setAttribute("property", "article:published_time");
+        return m;
+      }, article.publishedTime);
+      if (article.modifiedTime) {
+        upsertMeta('meta[property="article:modified_time"]', () => {
+          const m = document.createElement("meta");
+          m.setAttribute("property", "article:modified_time");
+          return m;
+        }, article.modifiedTime);
+      }
+      if (article.author) {
+        upsertMeta('meta[property="article:author"]', () => {
+          const m = document.createElement("meta");
+          m.setAttribute("property", "article:author");
+          return m;
+        }, article.author);
+      }
+      if (article.section) {
+        upsertMeta('meta[property="article:section"]', () => {
+          const m = document.createElement("meta");
+          m.setAttribute("property", "article:section");
+          return m;
+        }, article.section);
+      }
+    }
+
+    upsertLink("canonical", pageUrl);
+    setJsonLd(jsonLdBlocks);
+
+    return () => {
+      setJsonLd([]);
+    };
+  }, [
+    title,
+    description,
+    keywords,
+    imageUrl,
+    pageUrl,
+    type,
+    robots,
+    article?.publishedTime,
+    article?.modifiedTime,
+    article?.author,
+    article?.section,
+    jsonLdBlocks,
+    titleTemplate,
+  ]);
+
+  return null;
 };
+
+/** SEO for auth and app screens that should not appear in search results. */
+export const NoIndexSEO = ({ title }: { title: string }) => (
+  <SEO
+    title={title}
+    robots="noindex, nofollow"
+    titleTemplate={false}
+  />
+);

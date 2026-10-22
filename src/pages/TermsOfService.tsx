@@ -6,7 +6,11 @@ import { Footer } from "@/components/layout/Footer";
 export default function TermsOfService() {
     return (
         <div className="min-h-screen bg-background">
-            <SEO title="Terms of Service" description="Read the legal agreement for using the Boltfy platform." />
+            <SEO
+                title="Terms of Service"
+                description="Legal terms for using Boltfy — free form builder, subscriber management, and email campaigns."
+                path="/terms"
+            />
 
             <div className="py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-3xl mx-auto">

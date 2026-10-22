@@ -33,7 +33,12 @@ export default function Unsubscribe() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-[#f8fafc]">
-            <SEO title="Unsubscribe - Boltfy" description="Manage your email subscription preferences." />
+            <SEO
+                title="Unsubscribe"
+                description="Manage your email subscription preferences for Boltfy campaigns."
+                path="/unsubscribe"
+                robots="noindex, follow"
+            />
             <Card className="max-w-md w-full text-center shadow-2xl">
                 <CardContent className="pt-12 pb-12 flex flex-col items-center">
                     {status === "loading" && (

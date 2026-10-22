@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/layout/SEO";
+import { LANDING_FAQ } from "@/content/faq";
+import { homePageGraph } from "@/lib/seo-schemas";
+import { SITE } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -94,6 +98,13 @@ export default function LandingPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 overflow-x-hidden transition-colors duration-300">
+            <SEO
+                title="Free Form Builder — Unlimited Forms & Real-Time Analytics"
+                description={SITE.defaultDescription}
+                path="/"
+                titleTemplate={false}
+                jsonLd={homePageGraph(LANDING_FAQ)}
+            />
             {/* Ambient Background Effects */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 dark:bg-primary/5 rounded-full blur-[140px]" />
@@ -117,6 +128,7 @@ export default function LandingPage() {
                          <a href="#demo" className="hover:text-foreground transition-colors duration-200">Interactive Demo</a>
                          <a href="#testimonials" className="hover:text-foreground transition-colors duration-200">Testimonials</a>
                          <a href="#pricing" className="hover:text-foreground transition-colors duration-200">Pricing</a>
+                         <Link to="/blog" className="hover:text-foreground transition-colors duration-200">Blog</Link>
                          <a href="#faq" className="hover:text-foreground transition-colors duration-200">FAQ</a>
                     </div>
                     <div className="flex items-center gap-3">
@@ -794,50 +806,20 @@ export default function LandingPage() {
 
                     <FadeIn>
                         <Accordion type="single" collapsible className="w-full border-t border-border/40">
-                            <AccordionItem value="item-1" className="border-b border-border/40">
-                                <AccordionTrigger className="text-left font-semibold py-4 hover:no-underline hover:text-primary transition-colors text-sm md:text-base">
-                                    Can I build forms without writing code?
-                                </AccordionTrigger>
-                                <AccordionContent className="text-muted-foreground text-sm font-light leading-relaxed">
-                                    Absolutely. Boltfy features a completely visual, drag-and-drop form composer. You can configure fields, set validation schemas, customize labels, and update buttons interactively without ever touching source code.
-                                </AccordionContent>
-                            </AccordionItem>
-
-                            <AccordionItem value="item-2" className="border-b border-border/40">
-                                <AccordionTrigger className="text-left font-semibold py-4 hover:no-underline hover:text-primary transition-colors text-sm md:text-base">
-                                    Is it really free forever?
-                                </AccordionTrigger>
-                                <AccordionContent className="text-muted-foreground text-sm font-light leading-relaxed">
-                                    Yes, Boltfy is completely free. You can create unlimited forms and collect unlimited responses. There are no pricing tiers, trials, limits, or hidden fees.
-                                </AccordionContent>
-                            </AccordionItem>
-
-                            <AccordionItem value="item-3" className="border-b border-border/40">
-                                <AccordionTrigger className="text-left font-semibold py-4 hover:no-underline hover:text-primary transition-colors text-sm md:text-base">
-                                    Are integrations and webhooks free?
-                                </AccordionTrigger>
-                                <AccordionContent className="text-muted-foreground text-sm font-light leading-relaxed">
-                                    Yes. Connecting your forms to Supabase database pools, forwarding events to custom webhooks, and using Resend for mail automation are fully supported at no cost.
-                                </AccordionContent>
-                            </AccordionItem>
-
-                            <AccordionItem value="item-4" className="border-b border-border/40">
-                                <AccordionTrigger className="text-left font-semibold py-4 hover:no-underline hover:text-primary transition-colors text-sm md:text-base">
-                                    Can I connect a custom domain for free?
-                                </AccordionTrigger>
-                                <AccordionContent className="text-muted-foreground text-sm font-light leading-relaxed">
-                                    Yes, you can map your custom subdomains or root domains in your settings. Boltfy handles automated secure SSL certification for all domains free of charge.
-                                </AccordionContent>
-                            </AccordionItem>
-
-                            <AccordionItem value="item-5" className="border-b border-border/40">
-                                <AccordionTrigger className="text-left font-semibold py-4 hover:no-underline hover:text-primary transition-colors text-sm md:text-base">
-                                    Is Boltfy GDPR compliant?
-                                </AccordionTrigger>
-                                <AccordionContent className="text-muted-foreground text-sm font-light leading-relaxed">
-                                    Yes, security and data privacy are top priorities. All submission data is stored on highly secure, encrypted pools. We provide simple options to configure cookie consent dialogs and clean user data purge requests directly from the workspace.
-                                </AccordionContent>
-                            </AccordionItem>
+                            {LANDING_FAQ.map((item, index) => (
+                                <AccordionItem
+                                    key={item.question}
+                                    value={`item-${index + 1}`}
+                                    className="border-b border-border/40"
+                                >
+                                    <AccordionTrigger className="text-left font-semibold py-4 hover:no-underline hover:text-primary transition-colors text-sm md:text-base">
+                                        {item.question}
+                                    </AccordionTrigger>
+                                    <AccordionContent className="text-muted-foreground text-sm font-light leading-relaxed">
+                                        {item.answer}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
                         </Accordion>
                     </FadeIn>
                 </section>

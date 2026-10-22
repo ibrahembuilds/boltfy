@@ -8,8 +8,9 @@ export default function PrivacyPolicy() {
     return (
         <div className="min-h-screen bg-background">
             <SEO
-                title="Privacy Policy - Boltfy"
-                description="Learn how Boltfy collects, uses, and protects your personal data. We are committed to transparency and your privacy."
+                title="Privacy Policy"
+                description="How Boltfy collects, uses, stores, and protects personal data for form builders, subscribers, and email campaigns."
+                path="/privacy"
             />
 
             {/* Simple Header */}

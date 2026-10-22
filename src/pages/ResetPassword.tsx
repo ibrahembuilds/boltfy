@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Lock, ArrowLeft, Check, CheckCircle } from "lucide-react";
+import { NoIndexSEO } from "@/components/layout/SEO";
 
 export default function ResetPassword() {
     const navigate = useNavigate();
@@ -106,6 +107,7 @@ export default function ResetPassword() {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
+            <NoIndexSEO title="Reset password" />
             {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-brand/20 rounded-full blur-[100px]" />

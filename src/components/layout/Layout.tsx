@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { NoIndexSEO } from "@/components/layout/SEO";
 
 interface LayoutProps {
   children: ReactNode;
@@ -16,6 +17,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <NoIndexSEO title="Boltfy workspace" />
       <Sidebar
         mobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}

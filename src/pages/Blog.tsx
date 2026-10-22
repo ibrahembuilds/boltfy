@@ -13,6 +13,7 @@ export interface BlogPost {
     title: string;
     excerpt: string;
     date: string;
+    dateISO: string;
     author: string;
     readTime: string;
     category: string;
@@ -26,6 +27,7 @@ export const blogPosts: BlogPost[] = [
         title: "The Ultimate Guide to Form Conversion Optimization in 2026",
         excerpt: "Discover how specifically designed form layouts can increase your landing page conversion by up to 400%. SEO and UX matter.",
         date: "Dec 30, 2025",
+        dateISO: "2025-12-30",
         author: "Elena Rivers",
         readTime: "7 min",
         category: "Strategy",
@@ -37,6 +39,7 @@ export const blogPosts: BlogPost[] = [
         title: "How to Build an Automated Lead Collection System with No-Code",
         excerpt: "Learn the secrets of connecting Boltfy with your CRM and Slack for real-time lead notification and automated follow-ups.",
         date: "Dec 25, 2025",
+        dateISO: "2025-12-25",
         author: "Marcus Chen",
         readTime: "10 min",
         category: "Automation",
@@ -48,6 +51,7 @@ export const blogPosts: BlogPost[] = [
         title: "Luxury Web Design Trends: Why Your SaaS Forms Need an Upgrade",
         excerpt: "Bento grids, soft shadows, and glassmorphism. Why aesthetics define the perceived value of your software product.",
         date: "Dec 18, 2025",
+        dateISO: "2025-12-18",
         author: "Elena Rivers",
         readTime: "5 min",
         category: "Aesthetics",
@@ -58,7 +62,25 @@ export const blogPosts: BlogPost[] = [
 export default function Blog() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <SEO title="Blog" description="Insights, guides, and updates from the Boltfy team." />
+            <SEO
+                title="Blog — Form Design, Lead Capture & No-Code Growth"
+                description="Guides on form conversion, automated lead collection, and SaaS UX from the Boltfy team. Free form builder tips for 2026."
+                path="/blog"
+                jsonLd={{
+                    "@context": "https://schema.org",
+                    "@type": "Blog",
+                    name: "Boltfy Blog",
+                    description: "Form builder, conversion, and growth guides.",
+                    url: "https://boltfy.io/blog",
+                    blogPost: blogPosts.map((p) => ({
+                        "@type": "BlogPosting",
+                        headline: p.title,
+                        url: `https://boltfy.io/blog/${p.slug}`,
+                        datePublished: p.dateISO,
+                        author: { "@type": "Person", name: p.author },
+                    })),
+                }}
+            />
 
             {/* Brand Navigation */}
             <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">

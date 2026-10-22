@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, Mail, Lock, ArrowLeft } from "lucide-react";
+import { NoIndexSEO } from "@/components/layout/SEO";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -78,6 +79,7 @@ export default function Login() {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500">
+            <NoIndexSEO title="Log in" />
             {/* Background effects */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div

@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { SEO } from "@/components/layout/SEO";
+import { articleSchema, breadcrumbSchema } from "@/lib/seo-schemas";
 import { blogPosts } from "./Blog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, User, Calendar, Clock, Share2, Facebook, Twitter, Linkedin } from "lucide-react";
@@ -28,7 +29,29 @@ export default function BlogPost() {
             <SEO
                 title={post.title}
                 description={post.excerpt}
+                path={`/blog/${post.slug}`}
                 image={post.image}
+                type="article"
+                article={{
+                    publishedTime: post.dateISO,
+                    author: post.author,
+                    section: post.category,
+                }}
+                jsonLd={[
+                    breadcrumbSchema([
+                        { name: "Home", path: "/" },
+                        { name: "Blog", path: "/blog" },
+                        { name: post.title, path: `/blog/${post.slug}` },
+                    ]),
+                    articleSchema({
+                        title: post.title,
+                        description: post.excerpt,
+                        path: `/blog/${post.slug}`,
+                        image: post.image,
+                        datePublished: post.dateISO,
+                        authorName: post.author,
+                    }),
+                ]}
             />
 
             {/* Article Navigation */}

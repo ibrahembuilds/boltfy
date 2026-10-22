@@ -31,7 +31,11 @@ export default function Contact() {
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <SEO title="Contact Us" description="Have questions about Boltfy? We're here to help." />
+            <SEO
+                title="Contact Us"
+                description="Questions about Boltfy forms, campaigns, or your account? Reach our team at support@boltfy.io."
+                path="/contact"
+            />
 
             {/* Navigation */}
             <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
@@ -70,8 +74,8 @@ export default function Contact() {
                                         </div>
                                         <div>
                                             <h3 className="text-lg font-semibold mb-1">Email us</h3>
-                                            <p className="text-muted-foreground">support@boltfy.com</p>
-                                            <p className="text-muted-foreground">hello@boltfy.com</p>
+                                            <p className="text-muted-foreground">support@boltfy.io</p>
+                                            <p className="text-muted-foreground">hello@boltfy.io</p>
                                         </div>
                                     </div>
 

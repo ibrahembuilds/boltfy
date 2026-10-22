@@ -1,4 +1,43 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /forms
+Disallow: /subscribers
+Disallow: /campaigns
+Disallow: /templates
+Disallow: /settings
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /f/
 
-Sitemap: https://boltfy.com/sitemap.xml
+# Generative engines / AI crawlers — public marketing content is welcome
+User-agent: GPTBot
+Allow: /
+Disallow: /dashboard
+Disallow: /forms
+Disallow: /f/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /dashboard
+Disallow: /forms
+Disallow: /f/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /dashboard
+Disallow: /forms
+Disallow: /f/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /dashboard
+Disallow: /forms
+Disallow: /f/
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://boltfy.io/sitemap.xml
