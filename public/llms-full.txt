@@ -1,0 +1,183 @@
+# Boltfy
+
+Boltfy is a free web form builder for contact forms, surveys, and newsletter signups. You design the form in the browser, share a public link or embed it on another site, collect responses in your account, manage subscribers, and send email campaigns.
+
+Canonical site: https://boltfy.io/
+Support: support@boltfy.io
+
+## Facts
+
+- **Drag-and-drop editor.** Add, edit, reorder, and remove fields in the browser. Set labels and options without writing form code.
+- **Style controls.** Set colors, type, spacing, corners, a logo, and the button label. Choose a solid, outline, or gradient button.
+- **Public link and embed.** Every published form has a link at /f/your-slug. Embed the same form in an iframe and add ?embed=true to hide the page chrome.
+- **Response dashboard.** Read submissions for the forms you own. The dashboard is filled from your account, not from sample numbers.
+- **Subscribers and campaigns.** Keep a subscriber list, export it to CSV or PDF, and send a campaign with an unsubscribe link in each message.
+- **Separated accounts.** Each account only reads its own forms, responses, subscribers, and campaigns. Public forms also include a honeypot and a too-fast submit check.
+
+- Creating an account does not require a credit card. The app does not show paid tiers.
+- Campaign email uses Resend. Without that key, the campaign is stored and not sent.
+- There is no custom form domain, Slack connection, Zapier connection, cookie banner, or one-click personal-data export.
+- Subscriber rows can be deleted from the Subscribers page and exported to CSV or PDF.
+
+## Frequently asked questions
+
+### What is Boltfy?
+
+Boltfy is a free web form builder for contact forms, surveys, and newsletter signups. You design the form in the browser, share a public link or embed it on another site, collect responses in your account, manage subscribers, and send email campaigns.
+
+### Can I build a form without writing code?
+
+Yes. The editor is visual. You add fields, change labels, reorder them, and set colors, type, spacing, and the button label from the form settings.
+
+### Is Boltfy free?
+
+Creating an account and publishing forms does not require a credit card, and the app does not show paid tiers. Campaign email is delivered by Resend when that service is configured for the project. If it is not configured, Boltfy keeps the campaign record and does not send the mail.
+
+### How do I share a form?
+
+Open the published form's public link, which looks like https://boltfy.io/f/your-slug. To place it on another site, embed that URL in an iframe and add ?embed=true.
+
+### Can I connect Slack, Zapier, or my own domain?
+
+Not inside Boltfy. You can email yourself on each submission, and you can export subscribers to CSV or PDF for another tool. Boltfy does not attach a custom domain to a form, and it does not post responses to Slack or Zapier.
+
+### How is one account's data kept separate?
+
+Forms, submissions, subscribers, campaigns, and templates are stored per account. Row-level security policies only return rows owned by the signed-in user. A visitor can submit a published form; that write goes through a server function that assigns the form owner, so the visitor does not choose which account receives the data.
+
+### Does Boltfy include a cookie banner or a one-click data export?
+
+No. The app uses the session it needs to keep you signed in. You can delete subscriber records from the Subscribers page. Privacy questions go to support@boltfy.io. The privacy policy describes what the site collects.
+
+## About
+
+Boltfy is a free web form builder for contact forms, surveys, and newsletter signups. You design the form in the browser, share a public link or embed it on another site, collect responses in your account, manage subscribers, and send email campaigns.
+
+## Who it is for
+
+Boltfy is for people who need a form on a site, a public link they can send, and a list of the people who answered. It fits contact forms, short surveys, feedback, and newsletter signup.
+
+## What you can do
+
+- Drag-and-drop editor. Add, edit, reorder, and remove fields in the browser. Set labels and options without writing form code.
+- Style controls. Set colors, type, spacing, corners, a logo, and the button label. Choose a solid, outline, or gradient button.
+- Public link and embed. Every published form has a link at /f/your-slug. Embed the same form in an iframe and add ?embed=true to hide the page chrome.
+- Response dashboard. Read submissions for the forms you own. The dashboard is filled from your account, not from sample numbers.
+- Subscribers and campaigns. Keep a subscriber list, export it to CSV or PDF, and send a campaign with an unsubscribe link in each message.
+- Separated accounts. Each account only reads its own forms, responses, subscribers, and campaigns. Public forms also include a honeypot and a too-fast submit check.
+
+## What it does not do
+
+Boltfy does not include paid plans, a custom domain for forms, Slack or Zapier connections, or a cookie-consent banner. It is not a CRM. Export the subscriber file when you need the list somewhere else.
+
+## How to reach Boltfy
+
+Email support@boltfy.io or use the contact form. Include the form link if your question is about a published form. There is no public office address.
+
+## Guides
+
+# How to get more people to finish a form
+
+A form gets finished when the question is clear and the fields match the promise. Here is what to change before you redesign the page, and how to publish that form with Boltfy.
+
+By Elena Rivers. Published 2025-12-30. Updated 2026-10-22.
+
+People finish a form when they understand the question, the fields match what the page promised, and the next step is obvious. A new background will not rescue a form that asks for a phone number, a company size, and a budget before it says what the person gets back.
+
+## What should you ask for?
+
+Start from the decision you will make with the answer. A newsletter form needs an email address. A contact form usually needs a name, an email, and a message. Add another field only when you will treat that answer differently.
+
+- Put the ask in the form title, not only in the page around it.
+- Keep labels visible. Placeholder text disappears while someone types.
+- Say what happens after submit: a reply, a file, or a place on a list.
+- Name the button for the action, such as "Get the guide" or "Send the message", when "Submit" is vague.
+
+## What should you check on a phone?
+
+Tap every field with a thumb. The keyboard should not cover the field you are filling. Errors should name the field that failed, and the space between inputs should be wide enough that the wrong row is hard to hit. Boltfy stores spacing, label size, and input size on the form, so you can change those without a separate mobile layout.
+
+## How do you publish the shorter form with Boltfy?
+
+Create the form in the editor and delete any field you will not use. Set the button label in the style controls. Publish it and copy the public link, which looks like /f/your-slug. To put the form on a page you already have, embed that link in an iframe and add ?embed=true so Boltfy's own page frame is left off.
+
+- Add a notification email on the form if you want a message for each response.
+- Read submissions from that form's list. The numbers there are the responses stored for your account.
+- Export subscribers to CSV or PDF when the list needs to live in another tool.
+
+## What is worth comparing?
+
+Compare how many people you sent to the form with how many submissions were stored that week. Boltfy does not invent a benchmark for you. If responses are low, remove a field or rewrite the button before you restyle the page.
+
+> A shorter form is a product decision. Every field you keep should change what you do next.
+
+Canonical URL: https://boltfy.io/blog/best-form-builder-for-conversion-optimization-2026
+
+---
+
+# How to collect leads with a no-code form
+
+Publish a Boltfy form, get an email when someone submits, keep subscribers on your account, and export or email them. No custom backend.
+
+By Marcus Chen. Published 2025-12-25. Updated 2026-10-22.
+
+A lead form has to capture an address you will write to, store it on the account that owns the form, and tell you it arrived. Boltfy does those three things. It does not file the lead into a CRM, Slack, or Zapier for you.
+
+## How do you set the form up?
+
+- Create a form and turn on subscriber collection if the response should join your subscriber list.
+- Ask for an email address. Add a name only if the campaign will use it.
+- Put your own address in the form's notification email so each submission can mail you.
+- Share the public link (/f/your-slug), or embed the form and add ?embed=true.
+
+A visitor submits the public form through a server function. That function attaches the response to the form owner. The visitor never picks which account receives the row.
+
+## How do you follow up?
+
+Open Subscribers to see who is active and who has unsubscribed. Write a campaign and send it to active subscribers. Each message includes an unsubscribe link. Delivery uses Resend when that key is configured for the Boltfy project. If the key is missing, Boltfy stores the campaign and does not send mail.
+
+## How do you move leads into another tool?
+
+Export the subscriber list to CSV or PDF from the Subscribers page, then import the file into the tool you already use. There is no built-in webhook, Slack post, or Zapier action. The export is the handoff.
+
+> Collect the address, store it on your account, and export it when another system needs it.
+
+Canonical URL: https://boltfy.io/blog/how-to-collect-leads-automatically-no-code
+
+---
+
+# How to design a form people trust
+
+Contrast, spacing, visible labels, and a specific button do more than decoration. These are the style controls Boltfy stores on each form.
+
+By Elena Rivers. Published 2025-12-18. Updated 2026-10-22.
+
+People trust a form they can read that looks like the same product as the page around it. They do not need a glass effect. They need contrast, a readable size, labels that stay visible, and a button that says what will happen.
+
+## Which style controls does Boltfy store?
+
+The editor saves a style object with the form. You can change it and the published form uses those values.
+
+- Primary, background, text, border, and input colors.
+- Font family, plus sizes for the title, labels, and inputs.
+- Alignment for the title and the labels.
+- Corner radius, padding, and the space between fields.
+- A logo image, its size, and whether it shows.
+- Button label, size, and a solid, outline, or gradient button.
+- A solid, gradient, or patterned background.
+
+## How should you use them?
+
+- Put dark text on a light field, or light text on a dark field. If you cannot read a label at arm's length, raise the contrast.
+- Keep one column. Several columns look dense and collapse badly on a phone.
+- Match the button color to the site where the form is embedded.
+- Hide the logo unless it is the same mark as that site.
+- Replace a generic "Submit" label when the outcome can be named.
+
+## Does the app theme change the published form?
+
+The Boltfy workspace has a light theme, a dark theme, and a system theme. A published form does not follow that switch. It uses the colors saved on the form, so choose them for the page where the form will appear.
+
+> Style the form so the question is the first thing a person sees.
+
+Canonical URL: https://boltfy.io/blog/luxury-web-design-trends-for-saas-forms

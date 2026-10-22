@@ -1,51 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://boltfy.com/</loc>
-    <lastmod>2025-12-30</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://boltfy.io/</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://boltfy.com/blog</loc>
-    <lastmod>2025-12-30</lastmod>
+    <loc>https://boltfy.io/about</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boltfy.io/blog</loc>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://boltfy.com/contact</loc>
-    <lastmod>2025-12-30</lastmod>
+    <loc>https://boltfy.io/contact</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boltfy.io/privacy</loc>
+    <lastmod>2024-12-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://boltfy.io/terms</loc>
+    <lastmod>2025-12-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://boltfy.io/blog/best-form-builder-for-conversion-optimization-2026</loc>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://boltfy.com/privacy</loc>
-    <lastmod>2025-12-30</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://boltfy.com/terms</loc>
-    <lastmod>2025-12-30</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://boltfy.com/blog/best-form-builder-for-conversion-optimization-2026</loc>
-    <lastmod>2025-12-30</lastmod>
+    <loc>https://boltfy.io/blog/how-to-collect-leads-automatically-no-code</loc>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://boltfy.com/blog/how-to-collect-leads-automatically-no-code</loc>
-    <lastmod>2025-12-30</lastmod>
+    <loc>https://boltfy.io/blog/luxury-web-design-trends-for-saas-forms</loc>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://boltfy.com/blog/luxury-web-design-trends-for-saas-forms</loc>
-    <lastmod>2025-12-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>

@@ -30,3 +30,6 @@ jobs:
           VITE_SUPABASE_URL: https://placeholder.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
           VITE_SUPABASE_PROJECT_ID: placeholder
+
+      - name: Check SEO output
+        run: npm run seo:check

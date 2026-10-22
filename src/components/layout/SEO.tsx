@@ -1,75 +1,149 @@
 import { useEffect } from "react";
+import {
+  OG_IMAGE_ALT,
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_PATH,
+  OG_IMAGE_WIDTH,
+  SITE_LANGUAGE,
+  SITE_LOCALE,
+  SITE_NAME,
+  absoluteImage,
+  absoluteUrl,
+} from "@/seo/site";
 
 interface SEOProps {
-    title: string;
-    description?: string;
-    keywords?: string;
-    image?: string;
-    url?: string;
-    type?: string;
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  keywords?: string;
+  image?: string;
+  type?: "website" | "article";
+  robots?: string;
+  jsonLd?: Record<string, unknown>;
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+}
+
+function upsertMeta(attribute: "name" | "property", key: string, content: string) {
+  let element = document.head.querySelector(`meta[${attribute}="${key}"]`);
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attribute, key);
+    document.head.appendChild(element);
+  }
+  element.setAttribute("content", content);
+}
+
+function removeMeta(attribute: "name" | "property", key: string) {
+  document.head.querySelector(`meta[${attribute}="${key}"]`)?.remove();
+}
+
+function upsertLink(rel: string, href: string, hreflang?: string) {
+  const selector = hreflang
+    ? `link[rel="${rel}"][hreflang="${hreflang}"]`
+    : `link[rel="${rel}"]:not([hreflang])`;
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement("link");
+    element.setAttribute("rel", rel);
+    if (hreflang) element.setAttribute("hreflang", hreflang);
+    document.head.appendChild(element);
+  }
+  element.setAttribute("href", href);
 }
 
 export const SEO = ({
-    title,
-    description = "Boltfy is the world's most beautiful form builder for creators and agencies. Build high-converting contact forms, lead magnets, and surveys with zero code.",
-    keywords = "form builder, online form creator, drag and drop form builder, contact form, lead collection, survey tool, beautiful forms, no-code forms, boltfy, saas form builder, dark mode forms",
-    image = "/og-image.png",
-    url = window.location.origin,
-    type = "website"
+  title,
+  description,
+  canonicalPath,
+  keywords = "",
+  image = OG_IMAGE_PATH,
+  type = "website",
+  robots = "index, follow",
+  jsonLd,
+  publishedTime,
+  modifiedTime,
+  author = SITE_NAME,
 }: SEOProps) => {
-    useEffect(() => {
-        // Update title
-        document.title = `${title} | Boltfy - Professional Form Builder`;
+  useEffect(() => {
+    const path = canonicalPath || `${window.location.pathname}${window.location.search}`;
+    const url = absoluteUrl(path.startsWith("/") ? path.split("?")[0] || "/" : "/");
+    const imageUrl = absoluteImage(image);
+    const usesDefaultImage = image === OG_IMAGE_PATH;
 
-        // Standard SEO
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) metaDesc.setAttribute("content", description);
+    document.title = title;
+    upsertMeta("name", "description", description);
+    upsertMeta("name", "keywords", keywords);
+    upsertMeta("name", "author", author);
+    upsertMeta("name", "robots", robots);
+    upsertMeta("name", "googlebot", robots);
+    upsertLink("canonical", url);
+    upsertLink("alternate", url, SITE_LANGUAGE);
+    upsertLink("alternate", url, "x-default");
 
-        // Open Graph / Facebook
-        const ogTitle = document.querySelector('meta[property="og:title"]');
-        if (ogTitle) ogTitle.setAttribute("content", title);
+    upsertMeta("property", "og:type", type === "article" ? "article" : "website");
+    upsertMeta("property", "og:site_name", SITE_NAME);
+    upsertMeta("property", "og:locale", SITE_LOCALE);
+    upsertMeta("property", "og:url", url);
+    upsertMeta("property", "og:title", title);
+    upsertMeta("property", "og:description", description);
+    upsertMeta("property", "og:image", imageUrl);
+    upsertMeta("property", "og:image:alt", usesDefaultImage ? OG_IMAGE_ALT : title);
 
-        const ogDesc = document.querySelector('meta[property="og:description"]');
-        if (ogDesc) ogDesc.setAttribute("content", description);
+    if (usesDefaultImage) {
+      upsertMeta("property", "og:image:width", String(OG_IMAGE_WIDTH));
+      upsertMeta("property", "og:image:height", String(OG_IMAGE_HEIGHT));
+    } else {
+      removeMeta("property", "og:image:width");
+      removeMeta("property", "og:image:height");
+    }
 
-        const ogImage = document.querySelector('meta[property="og:image"]');
-        if (ogImage) ogImage.setAttribute("content", image);
+    upsertMeta("name", "twitter:card", "summary_large_image");
+    upsertMeta("name", "twitter:url", url);
+    upsertMeta("name", "twitter:title", title);
+    upsertMeta("name", "twitter:description", description);
+    upsertMeta("name", "twitter:image", imageUrl);
+    upsertMeta("name", "twitter:image:alt", usesDefaultImage ? OG_IMAGE_ALT : title);
 
-        const ogUrl = document.querySelector('meta[property="og:url"]');
-        if (ogUrl) ogUrl.setAttribute("content", url);
+    if (type === "article" && publishedTime) {
+      upsertMeta("property", "article:published_time", publishedTime);
+      upsertMeta("property", "article:modified_time", modifiedTime || publishedTime);
+      upsertMeta("property", "article:author", author);
+    } else {
+      removeMeta("property", "article:published_time");
+      removeMeta("property", "article:modified_time");
+      removeMeta("property", "article:author");
+    }
 
-        const ogType = document.querySelector('meta[property="og:type"]');
-        if (ogType) ogType.setAttribute("content", type);
+    document.head.querySelectorAll('script[type="application/ld+json"]').forEach((node) => {
+      if (node.id !== "seo-jsonld") node.remove();
+    });
 
-        // Twitter
-        const twTitle = document.querySelector('meta[name="twitter:title"]');
-        if (twTitle) twTitle.setAttribute("content", title);
+    const existing = document.getElementById("seo-jsonld");
+    if (!jsonLd) {
+      existing?.remove();
+      return;
+    }
 
-        const twDesc = document.querySelector('meta[name="twitter:description"]');
-        if (twDesc) twDesc.setAttribute("content", description);
+    const script = existing instanceof HTMLScriptElement ? existing : document.createElement("script");
+    script.id = "seo-jsonld";
+    script.type = "application/ld+json";
+    script.text = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+    if (!existing) document.head.appendChild(script);
+  }, [
+    title,
+    description,
+    canonicalPath,
+    keywords,
+    image,
+    type,
+    robots,
+    jsonLd,
+    publishedTime,
+    modifiedTime,
+    author,
+  ]);
 
-        const twImage = document.querySelector('meta[name="twitter:image"]');
-        if (twImage) twImage.setAttribute("content", image);
-
-        // Keywords
-        let keywordsTag = document.querySelector('meta[name="keywords"]');
-        if (!keywordsTag) {
-            keywordsTag = document.createElement("meta");
-            keywordsTag.setAttribute("name", "keywords");
-            document.head.appendChild(keywordsTag);
-        }
-        keywordsTag.setAttribute("content", keywords);
-
-        // Robots
-        let robotsTag = document.querySelector('meta[name="robots"]');
-        if (!robotsTag) {
-            robotsTag = document.createElement("meta");
-            robotsTag.setAttribute("name", "robots");
-            document.head.appendChild(robotsTag);
-        }
-        robotsTag.setAttribute("content", "index, follow");
-
-    }, [title, description, image, url, type, keywords]);
-
-    return null;
+  return null;
 };

@@ -1,0 +1,20 @@
+# Boltfy
+
+> Boltfy is a free web form builder for contact forms, surveys, and newsletter signups. You design the form in the browser, share a public link or embed it on another site, collect responses in your account, manage subscribers, and send email campaigns.
+
+Boltfy does not show a paid plan and does not ask for a credit card to create an account. A published form is available at a public link (`/f/your-slug`) or in an iframe with `?embed=true`. Accounts are separated with row-level security. Campaign email is sent with Resend when that key is configured. There is no custom domain, Slack, or Zapier connection.
+
+## Product
+- [Home](https://boltfy.io/): What Boltfy does, how to publish a form, price, and frequently asked questions.
+- [About](https://boltfy.io/about): Who the product is for, what it includes, and what it does not do.
+- [Contact](https://boltfy.io/contact): Email support@boltfy.io.
+
+## Guides
+- [How to get more people to finish a form](https://boltfy.io/blog/best-form-builder-for-conversion-optimization-2026): A form gets finished when the question is clear and the fields match the promise. Here is what to change before you redesign the page, and how to publish that form with Boltfy.
+- [How to collect leads with a no-code form](https://boltfy.io/blog/how-to-collect-leads-automatically-no-code): Publish a Boltfy form, get an email when someone submits, keep subscribers on your account, and export or email them. No custom backend.
+- [How to design a form people trust](https://boltfy.io/blog/luxury-web-design-trends-for-saas-forms): Contrast, spacing, visible labels, and a specific button do more than decoration. These are the style controls Boltfy stores on each form.
+
+## Optional
+- [Privacy policy](https://boltfy.io/privacy): Account data, form responses, Google sign-in, and the session cookie.
+- [Terms of service](https://boltfy.io/terms): Terms for using the website and service.
+- [Full text for answer engines](https://boltfy.io/llms-full.txt): The FAQ, about page, and every guide in one Markdown file.

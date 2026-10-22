@@ -548,8 +548,10 @@ export default function PublicForm() {
                     }}
                 >
                     <SEO
-                        title={form.name}
-                        description={form.description || `Submit your response to ${form.name} - Created with Boltfy.`}
+                        title={`${form.name} | Boltfy`}
+                        description={form.description || `Submit a response to ${form.name}. Created with Boltfy.`}
+                        canonicalPath={`/f/${slug || ""}`}
+                        robots="noindex, nofollow"
                     />
                     {/* Logo */}
                     {style.showLogo && style.logoUrl && (

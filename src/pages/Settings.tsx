@@ -28,7 +28,7 @@ export default function Settings() {
   const { user } = useAuth();
   const [settings, setSettings] = useState({
     companyName: "Boltfy",
-    supportEmail: "support@boltfy.com",
+    supportEmail: "support@boltfy.io",
     notificationEmail: "",
     emailNotifications: true,
     autoSaveSubscribers: true,

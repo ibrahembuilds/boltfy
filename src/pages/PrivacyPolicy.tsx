@@ -1,17 +1,11 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Shield, Mail, Lock, Database, Eye, Users, Trash2, Download, Globe } from "lucide-react";
-import { SEO } from "@/components/layout/SEO";
 import { Footer } from "@/components/layout/Footer";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 
 export default function PrivacyPolicy() {
     return (
         <div className="min-h-screen bg-background">
-            <SEO
-                title="Privacy Policy - Boltfy"
-                description="Learn how Boltfy collects, uses, and protects your personal data. We are committed to transparency and your privacy."
-            />
-
             {/* Simple Header */}
             <header className="border-b border-border bg-background/80 backdrop-blur-lg sticky top-0 z-50">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

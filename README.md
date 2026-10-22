@@ -139,6 +139,21 @@ This builds and compiles static assets into the `/dist` directory.
 3. Add your environment variables (VITE_SUPABASE_URL, etc.) in the platform dashboard.
 4. Deploy!
 
+### Search and answer engines
+
+The canonical host is `https://boltfy.io`. `npm run build` prerenders the public
+pages (home, about, guides, contact, privacy, terms) so a crawler that does
+not run JavaScript still receives the title, canonical URL, JSON-LD, and the
+page text. It also writes:
+
+- `/sitemap.xml`
+- `/robots.txt` — account, auth, unsubscribe, and `/f/` URLs are disallowed
+- `/llms.txt` — short map for answer engines
+- `/llms-full.txt` — the FAQ, about page, and guides in one Markdown file
+
+`npm run seo:check` asserts those files after a build. Do not put a review
+rating in the structured data unless it comes from real, visible reviews.
+
 ---
 
 ## ✅ Testing & CI

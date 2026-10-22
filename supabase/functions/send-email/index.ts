@@ -12,6 +12,9 @@
 //    form_id — a client-supplied "to" is never trusted — so this endpoint
 //    can't be used as an open relay to arbitrary addresses.
 //
+//  - "contact": the public contact form. The inbox is SUPPORT_INBOX, or
+//    support@boltfy.io. The visitor's address is used only as reply-to.
+//
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const corsHeaders = {
@@ -64,15 +67,23 @@ async function sendViaResend(payload: {
   return { success: true, messageId: data.id };
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function formNotificationHtml(formName: string, data: Record<string, string>) {
   const rows = Object.entries(data)
-    .map(([key, value]) => `<p style="margin:8px 0;"><strong>${key}:</strong> ${String(value)}</p>`)
+    .map(([key, value]) => `<p style="margin:8px 0;"><strong>${escapeHtml(String(key))}:</strong> ${escapeHtml(String(value))}</p>`)
     .join("");
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;">
       <div style="background:white;border-radius:16px;padding:40px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
-        <h1 style="color:#1e293b;font-size:24px;font-weight:700;">New Submission: ${formName} 📬</h1>
+        <h1 style="color:#1e293b;font-size:24px;font-weight:700;">New Submission: ${escapeHtml(formName)}</h1>
         <p style="color:#475569;">Someone just submitted your form.</p>
         <div style="background:#f1f5f9;border-radius:8px;padding:16px;margin:16px 0;">${rows}</div>
         <p style="color:#475569;">Keep growing! 🚀<br>The Boltfy Team</p>
@@ -141,6 +152,50 @@ Deno.serve(async (req: Request) => {
         to: notificationEmail,
         subject: `New submission: ${form.name}`,
         html,
+      });
+      return json(result, result.success ? 200 : 502);
+    }
+
+    if (body.action === "contact") {
+      const name = String(body.name || "").trim();
+      const email = String(body.email || "").trim();
+      const subject = String(body.subject || "").trim().replace(/[\r\n]+/g, " ");
+      const message = String(body.message || "").trim();
+      const website = String(body.website || "").trim();
+
+      if (website) {
+        return json({ success: true, skipped: true });
+      }
+
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (name.length < 1 || name.length > 80) {
+        return json({ success: false, error: "Name must be 1–80 characters." }, 400);
+      }
+      if (!emailOk || email.length > 200) {
+        return json({ success: false, error: "Enter a valid email address." }, 400);
+      }
+      if (subject.length < 1 || subject.length > 140) {
+        return json({ success: false, error: "Subject must be 1–140 characters." }, 400);
+      }
+      if (message.length < 1 || message.length > 4000) {
+        return json({ success: false, error: "Message must be 1–4000 characters." }, 400);
+      }
+
+      const inbox = Deno.env.get("SUPPORT_INBOX") || "support@boltfy.io";
+      const html = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+          <h1 style="font-size:20px;">Boltfy contact form</h1>
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+          <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
+        </div>`;
+
+      const result = await sendViaResend({
+        to: inbox,
+        subject: `[Boltfy] ${subject}`,
+        html,
+        replyTo: email,
       });
       return json(result, result.success ? 200 : 502);
     }

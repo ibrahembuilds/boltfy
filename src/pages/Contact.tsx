@@ -1,38 +1,52 @@
 import { useState } from "react";
-import { SEO } from "@/components/layout/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, MessageSquare, MapPin, Send, CheckCircle, Loader2 } from "lucide-react";
+import { Mail, Send, CheckCircle, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { BrandLogo } from "@/components/layout/BrandLogo";
+import { emailService } from "@/lib/email";
+import { SITE_EMAIL } from "@/seo/site";
 
 export default function Contact() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+        website: "",
+    });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
-            setSubmitted(true);
+        const result = await emailService.sendContactMessage(form);
+        setLoading(false);
+
+        if (!result.success) {
             toast({
-                title: "Message Sent!",
-                description: "We'll get back to you as soon as possible.",
+                title: "Message not sent",
+                description: result.error || "Try again, or email support directly.",
+                variant: "destructive",
             });
-        }, 1500);
+            return;
+        }
+
+        setSubmitted(true);
+        toast({
+            title: "Message sent",
+            description: `We sent this to ${SITE_EMAIL}.`,
+        });
     };
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <SEO title="Contact Us" description="Have questions about Boltfy? We're here to help." />
-
             {/* Navigation */}
             <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -40,7 +54,8 @@ export default function Contact() {
                         <BrandLogo size="md" />
                     </Link>
                     <div className="flex items-center gap-6">
-                        <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
+                        <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Guides</Link>
+                        <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">About</Link>
                         <Link to="/login">
                             <Button variant="ghost" className="text-sm">Log in</Button>
                         </Link>
@@ -58,9 +73,9 @@ export default function Contact() {
                     <div className="max-w-7xl mx-auto">
                         <div className="grid lg:grid-cols-2 gap-16">
                             <div>
-                                <h1 className="text-5xl font-bold tracking-tight mb-6">Let's <span className="text-primary">connect</span></h1>
+                                <h1 className="text-5xl font-bold tracking-tight mb-6">Contact Boltfy</h1>
                                 <p className="text-xl text-muted-foreground mb-12 max-w-lg leading-relaxed">
-                                    Whether you have a question about features, pricing, need a demo, or anything else, our team is ready to answer all your questions.
+                                    Questions about an account, a published form, or email delivery go to {SITE_EMAIL}. The form on this page sends there, with your address as the reply-to.
                                 </p>
 
                                 <div className="space-y-8">
@@ -69,31 +84,9 @@ export default function Contact() {
                                             <Mail className="h-6 w-6 text-primary" />
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-1">Email us</h3>
-                                            <p className="text-muted-foreground">support@boltfy.com</p>
-                                            <p className="text-muted-foreground">hello@boltfy.com</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-6">
-                                        <div className="h-12 w-12 rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
-                                            <MessageSquare className="h-6 w-6 text-success" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold mb-1">Live Chat</h3>
-                                            <p className="text-muted-foreground">Our support team is online</p>
-                                            <p className="text-primary font-medium mt-1 cursor-pointer hover:underline">Start a conversation</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-6">
-                                        <div className="h-12 w-12 rounded-2xl bg-warning/10 flex items-center justify-center shrink-0">
-                                            <MapPin className="h-6 w-6 text-warning" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold mb-1">Base</h3>
-                                            <p className="text-muted-foreground">Remote first, globally distributed.</p>
-                                            <p className="text-muted-foreground">San Francisco, CA</p>
+                                            <h2 className="text-lg font-semibold mb-1">Email</h2>
+                                            <a href={`mailto:${SITE_EMAIL}`} className="text-primary hover:underline">{SITE_EMAIL}</a>
+                                            <p className="text-muted-foreground mt-2">Include the form link if the question is about a form you published. There is no live chat and no public office.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -110,9 +103,9 @@ export default function Contact() {
                                                 <div className="h-20 w-20 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6 scale-animation">
                                                     <CheckCircle className="h-10 w-10 text-success" />
                                                 </div>
-                                                <h2 className="text-3xl font-bold mb-4">Message Sent!</h2>
+                                                <h2 className="text-3xl font-bold mb-4">Message sent</h2>
                                                 <p className="text-muted-foreground mb-8">
-                                                    Thank you for reaching out. A member of our team will be in touch shortly.
+                                                    This went to {SITE_EMAIL}. If email delivery is not configured on the project, the message is logged on the server instead of delivered.
                                                 </p>
                                                 <Button
                                                     variant="outline"
@@ -126,28 +119,36 @@ export default function Contact() {
                                             <form onSubmit={handleSubmit} className="space-y-6">
                                                 <div className="grid md:grid-cols-2 gap-6">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="name">Full Name</Label>
-                                                        <Input id="name" placeholder="John Doe" required className="h-12 bg-background border-border" />
+                                                        <Label htmlFor="name">Full name</Label>
+                                                        <Input id="name" name="name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Ada Lovelace" required maxLength={80} className="h-12 bg-background border-border" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="email">Email Address</Label>
-                                                        <Input id="email" type="email" placeholder="john@example.com" required className="h-12 bg-background border-border" />
+                                                        <Label htmlFor="email">Email address</Label>
+                                                        <Input id="email" name="email" type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="ada@example.com" required maxLength={200} className="h-12 bg-background border-border" />
                                                     </div>
                                                 </div>
 
                                                 <div className="space-y-2">
                                                     <Label htmlFor="subject">Subject</Label>
-                                                    <Input id="subject" placeholder="How can we help?" required className="h-12 bg-background border-border" />
+                                                    <Input id="subject" name="subject" value={form.subject} onChange={(event) => setForm({ ...form, subject: event.target.value })} placeholder="Question about a published form" required maxLength={140} className="h-12 bg-background border-border" />
                                                 </div>
 
                                                 <div className="space-y-2">
                                                     <Label htmlFor="message">Message</Label>
                                                     <Textarea
                                                         id="message"
-                                                        placeholder="Tell us more about your needs..."
+                                                        name="message"
+                                                        value={form.message}
+                                                        onChange={(event) => setForm({ ...form, message: event.target.value })}
+                                                        placeholder="What do you need help with?"
                                                         required
+                                                        maxLength={4000}
                                                         className="min-h-[150px] bg-background border-border resize-none"
                                                     />
+                                                </div>
+                                                <div className="hidden" aria-hidden="true">
+                                                    <Label htmlFor="website">Website</Label>
+                                                    <Input id="website" name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={(event) => setForm({ ...form, website: event.target.value })} />
                                                 </div>
 
                                                 <Button

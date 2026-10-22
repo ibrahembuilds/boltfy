@@ -1,15 +1,16 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { SEO } from "@/components/layout/SEO";
-import { blogPosts } from "./Blog";
+import { findArticle, blogArticles } from "@/seo/blog";
+import { absoluteUrl, formatLongDate } from "@/seo/site";
+import { Blocks } from "@/components/content/Blocks";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, User, Calendar, Clock, Share2, Facebook, Twitter, Linkedin } from "lucide-react";
+import { ArrowLeft, User, Calendar, Clock, Facebook, Twitter, Linkedin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect } from "react";
 
 export default function BlogPost() {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const post = blogPosts.find((p) => p.slug === slug);
+    const post = findArticle(slug);
 
     useEffect(() => {
         if (!post) {
@@ -25,12 +26,6 @@ export default function BlogPost() {
 
     return (
         <div className="min-h-screen bg-background">
-            <SEO
-                title={post.title}
-                description={post.excerpt}
-                image={post.image}
-            />
-
             {/* Article Navigation */}
             <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -38,13 +33,9 @@ export default function BlogPost() {
                         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                         Back to Blog
                     </Link>
-                    <div className="hidden md:flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-4">
                         <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Share:</span>
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><Twitter className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><Facebook className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><Linkedin className="h-4 w-4" /></Button>
-                        </div>
+                        <ShareLinks title={post.title} path={`/blog/${post.slug}`} />
                     </div>
                 </div>
             </nav>
@@ -73,7 +64,7 @@ export default function BlogPost() {
                             <div className="flex items-center gap-4 text-xs text-muted-foreground ml-auto">
                                 <span className="flex items-center gap-1.5">
                                     <Calendar className="h-4 w-4" />
-                                    {post.date}
+                                    {formatLongDate(post.published)}
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Clock className="h-4 w-4" />
@@ -89,57 +80,17 @@ export default function BlogPost() {
                     </div>
 
                     {/* Content */}
-                    <div className="prose prose-slate dark:prose-invert max-w-none">
-                        <p className="text-xl text-muted-foreground leading-relaxed italic mb-8 border-l-4 border-primary pl-6 py-2">
-                            "{post.excerpt}"
+                    <div className="max-w-none">
+                        <p className="text-xl text-muted-foreground leading-relaxed mb-8 border-l-4 border-primary pl-6 py-2">
+                            {post.description}
                         </p>
-
-                        <h2 className="text-2xl font-bold mt-12 mb-6">The Power of First Impressions</h2>
-                        <p>
-                            In today's digital landscape, a form is more than just a data entry point; it's a conversation. It's the moment where a potential lead decides whether to trust you with their information or leave forever. This is where <strong>design aesthetics</strong> play a critical role.
-                        </p>
-
-                        <p className="mt-6">
-                            When we built Boltfy, we realized that traditional form builders were focused 100% on logic and 0% on feel. They provided functional inputs, but they felt cold, clinical, and often frustrating on mobile devices.
-                        </p>
-
-                        <h3 className="text-xl font-bold mt-10 mb-4">Key takeaways for high conversion:</h3>
-                        <ul className="list-disc pl-6 space-y-3 mt-4">
-                            <li><strong>Minimalist Layout:</strong> Never ask for more than you need. Every extra field decreases conversion by 5-10%.</li>
-                            <li><strong>Visual Harmony:</strong> Match your form style to your brand identity. A disjointed experience feels untrustworthy.</li>
-                            <li><strong>Micro-interactions:</strong> Provide instant feedback. Success animations and clean error states keep users engaged.</li>
-                            <li><strong>Mobile Persistence:</strong> Ensure hit-boxes are large and inputs are properly spaced for thumbs.</li>
-                        </ul>
-
-                        <div className="bg-primary/5 rounded-3xl p-8 my-12 border border-primary/10">
-                            <h4 className="font-bold text-lg mb-2 text-primary">Pro Tip</h4>
-                            <p className="text-sm text-foreground mb-0">
-                                Try using "Step Forms" for longer surveys. Breaking 10 questions into 3-4 distinct steps reduces cognitive load and increases completion rates by up to 40%.
-                            </p>
-                        </div>
-
-                        <p className="mt-10">
-                            As we look toward 2026, the intersection of AI and design will continue to evolve. At Boltfy, we're already experimenting with generative UI that adapts to the user's intent in real-time.
-                        </p>
-
-                        <blockquote className="border-l-4 border-primary pl-8 my-12 italic text-2xl font-medium text-foreground/80">
-                            "Design is not just what it looks like and feels like. Design is how it works."
-                        </blockquote>
-
-                        <p>
-                            The future of data collection is beautiful, fast, and respectful. By prioritizing the user experience, you're not just getting a lead; you're starting a high-quality relationship.
-                        </p>
+                        <Blocks blocks={post.sections} />
                     </div>
 
                     {/* Post Footer */}
                     <footer className="mt-24 pt-12 border-t border-border">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                            <div className="flex items-center gap-4">
-                                <Button variant="outline" className="gap-2 h-12 rounded-xl">
-                                    <Share2 className="h-4 w-4" />
-                                    Share Article
-                                </Button>
-                            </div>
+                            <ShareLinks title={post.title} path={`/blog/${post.slug}`} />
                             <div className="flex items-center gap-6">
                                 <Link to="/contact" className="text-sm font-medium hover:text-primary underline">Report an issue</Link>
                             </div>
@@ -153,15 +104,15 @@ export default function BlogPost() {
                 <div className="max-w-7xl mx-auto px-6">
                     <h2 className="text-3xl font-bold mb-12 text-center">More from Boltfy</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {blogPosts.filter(p => p.id !== post.id).slice(0, 3).map(p => (
-                            <Link key={p.id} to={`/blog/${p.slug}`} className="group">
+                        {blogArticles.filter((p) => p.slug !== post.slug).slice(0, 3).map(p => (
+                            <Link key={p.slug} to={`/blog/${p.slug}`} className="group">
                                 <div className="bg-card rounded-2xl overflow-hidden border border-border transition-all hover:shadow-xl hover:-translate-y-1">
                                     <div className="aspect-video overflow-hidden">
                                         <img src={p.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={p.title} />
                                     </div>
                                     <div className="p-6">
                                         <h3 className="font-bold mb-2 group-hover:text-primary transition-colors">{p.title}</h3>
-                                        <p className="text-xs text-muted-foreground line-clamp-2">{p.excerpt}</p>
+                                        <p className="text-xs text-muted-foreground line-clamp-2">{p.description}</p>
                                     </div>
                                 </div>
                             </Link>
@@ -176,9 +127,34 @@ export default function BlogPost() {
                         <img src="/icon.png" alt="Logo" className="h-6 w-6" />
                         <span className="font-bold">Boltfy</span>
                     </Link>
-                    <p className="text-xs text-muted-foreground underline">Back to Home</p>
+                    <Link to="/" className="text-xs text-muted-foreground underline">Back to Home</Link>
                 </div>
             </footer>
+        </div>
+    );
+}
+
+function ShareLinks({ title, path }: { title: string; path: string }) {
+    const url = encodeURIComponent(absoluteUrl(path));
+    const text = encodeURIComponent(title);
+    const links = [
+        { label: "Share on X", href: `https://twitter.com/intent/tweet?url=${url}&text=${text}`, icon: Twitter },
+        { label: "Share on Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}`, icon: Facebook },
+        { label: "Share on LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`, icon: Linkedin },
+    ];
+
+    return (
+        <div className="flex gap-2">
+            {links.map((link) => {
+                const Icon = link.icon;
+                return (
+                    <Button key={link.label} variant="ghost" size="icon" className="h-8 w-8 rounded-full" asChild>
+                        <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label}>
+                            <Icon className="h-4 w-4" />
+                        </a>
+                    </Button>
+                );
+            })}
         </div>
     );
 }

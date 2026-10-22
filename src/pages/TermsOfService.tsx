@@ -1,13 +1,10 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { SEO } from "@/components/layout/SEO";
 import { Footer } from "@/components/layout/Footer";
 
 export default function TermsOfService() {
     return (
         <div className="min-h-screen bg-background">
-            <SEO title="Terms of Service" description="Read the legal agreement for using the Boltfy platform." />
-
             <div className="py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-3xl mx-auto">
                     <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8 group">

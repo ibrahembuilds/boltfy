@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { RouteSeo } from "@/components/layout/RouteSeo";
 import { Analytics } from "@vercel/analytics/react";
 
 // Pages
@@ -30,6 +31,7 @@ import Campaigns from "./pages/Campaigns";
 import Templates from "./pages/Templates";
 import TemplateEditor from "./pages/TemplateEditor";
 import NotFound from "./pages/NotFound";
+import About from "./pages/About";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +73,7 @@ function AppRoutes() {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/about" element={<About />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
 
@@ -190,6 +193,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <ScrollToTop />
+          <RouteSeo />
           <AppRoutes />
         </BrowserRouter>
         <Analytics />

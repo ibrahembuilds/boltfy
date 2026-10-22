@@ -2,6 +2,10 @@
   RewriteEngine On
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
+  # Prerendered public routes (about/index.html, blog/index.html, ...)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+  RewriteRule ^(.+?)/?$ /$1/index.html [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
@@ -38,7 +42,10 @@
 
 # Security headers
 <IfModule mod_headers.c>
+  SetEnvIf Request_URI "^/(dashboard|forms|settings|subscribers|campaigns|templates|login|signup|forgot-password|reset-password|unsubscribe|f)(/|$)" PRIVATE_PAGE
+  Header set X-Robots-Tag "noindex, nofollow" env=PRIVATE_PAGE
   Header set X-Content-Type-Options "nosniff"
   Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
   Header set X-XSS-Protection "1; mode=block"
 </IfModule>

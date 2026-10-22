@@ -220,6 +220,32 @@ class EmailService {
 
         return results;
     }
+
+    async sendContactMessage(input: {
+        name: string;
+        email: string;
+        subject: string;
+        message: string;
+        website?: string;
+    }): Promise<EmailResult> {
+        try {
+            const { data: result, error } = await supabase.functions.invoke("send-email", {
+                body: { action: "contact", ...input },
+            });
+
+            if (error) return { success: false, error: error.message };
+            if (result && typeof result === "object" && "success" in result && result.success === false) {
+                const message = "error" in result ? String(result.error) : "Failed to send";
+                return { success: false, error: message };
+            }
+            return (result as EmailResult) ?? { success: false, error: "No response from the email service" };
+        } catch (err) {
+            return {
+                success: false,
+                error: err instanceof Error ? err.message : "Could not reach the email service",
+            };
+        }
+    }
 }
 
 // Export singleton instance

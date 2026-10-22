@@ -1,4 +1,24 @@
+# Boltfy — https://boltfy.io/
+# Marketing pages, guides, /llms.txt, and /llms-full.txt are public.
+# Googlebot, Bingbot, GPTBot, OAI-SearchBot, ChatGPT-User, PerplexityBot,
+# ClaudeBot, anthropic-ai, Google-Extended, and Applebot-Extended may use
+# the allowed pages. Account, auth, unsubscribe, and published-form URLs are not for indexing.
+# A specific User-agent group replaces "*" rather than merging with it,
+# so private routes are listed once, on the default group.
+
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /forms
+Disallow: /settings
+Disallow: /subscribers
+Disallow: /campaigns
+Disallow: /templates
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /unsubscribe
+Disallow: /f/
 
-Sitemap: https://boltfy.com/sitemap.xml
+Sitemap: https://boltfy.io/sitemap.xml

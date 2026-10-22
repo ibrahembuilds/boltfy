@@ -3,8 +3,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle, MailX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { SEO } from "@/components/layout/SEO";
-
 type Status = "loading" | "success" | "error";
 
 export default function Unsubscribe() {
@@ -33,7 +31,6 @@ export default function Unsubscribe() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-[#f8fafc]">
-            <SEO title="Unsubscribe - Boltfy" description="Manage your email subscription preferences." />
             <Card className="max-w-md w-full text-center shadow-2xl">
                 <CardContent className="pt-12 pb-12 flex flex-col items-center">
                     {status === "loading" && (

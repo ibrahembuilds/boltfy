@@ -12,6 +12,13 @@
   per-user row-level security on every table
 - Unsubscribe flow for campaign recipients
 
+## ✅ Search and answer-engine pages
+- [x] One canonical host (`https://boltfy.io`) for tags, sitemap, and robots
+- [x] Prerendered HTML for public routes, plus `/llms.txt` and `/llms-full.txt`
+- [x] FAQ, article, and organization structured data with no invented rating
+- [x] Account, auth, unsubscribe, and public form URLs kept out of the index
+- [x] Contact form sends through the `send-email` function
+
 ## ✅ Recently Fixed (Security & Correctness Hardening)
 These were the platform's most serious gaps and are now resolved:
 - [x] **Data isolation**: every table now has owner-scoped RLS

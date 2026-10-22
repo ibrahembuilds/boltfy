@@ -1,64 +1,15 @@
-import { SEO } from "@/components/layout/SEO";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Calendar, User, Clock } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { BrandLogo } from "@/components/layout/BrandLogo";
-
-export interface BlogPost {
-    id: string;
-    slug: string;
-    title: string;
-    excerpt: string;
-    date: string;
-    author: string;
-    readTime: string;
-    category: string;
-    image: string;
-}
-
-export const blogPosts: BlogPost[] = [
-    {
-        id: "1",
-        slug: "best-form-builder-for-conversion-optimization-2026",
-        title: "The Ultimate Guide to Form Conversion Optimization in 2026",
-        excerpt: "Discover how specifically designed form layouts can increase your landing page conversion by up to 400%. SEO and UX matter.",
-        date: "Dec 30, 2025",
-        author: "Elena Rivers",
-        readTime: "7 min",
-        category: "Strategy",
-        image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
-    },
-    {
-        id: "2",
-        slug: "how-to-collect-leads-automatically-no-code",
-        title: "How to Build an Automated Lead Collection System with No-Code",
-        excerpt: "Learn the secrets of connecting Boltfy with your CRM and Slack for real-time lead notification and automated follow-ups.",
-        date: "Dec 25, 2025",
-        author: "Marcus Chen",
-        readTime: "10 min",
-        category: "Automation",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
-    },
-    {
-        id: "3",
-        slug: "luxury-web-design-trends-for-saas-forms",
-        title: "Luxury Web Design Trends: Why Your SaaS Forms Need an Upgrade",
-        excerpt: "Bento grids, soft shadows, and glassmorphism. Why aesthetics define the perceived value of your software product.",
-        date: "Dec 18, 2025",
-        author: "Elena Rivers",
-        readTime: "5 min",
-        category: "Aesthetics",
-        image: "https://images.unsplash.com/photo-1558655146-23ecdd3f4040?auto=format&fit=crop&q=80&w=800",
-    }
-];
+import { blogArticles } from "@/seo/blog";
+import { formatLongDate } from "@/seo/site";
 
 export default function Blog() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <SEO title="Blog" description="Insights, guides, and updates from the Boltfy team." />
 
             {/* Brand Navigation */}
             <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
@@ -85,11 +36,11 @@ export default function Blog() {
                         <Badge variant="outline" className="mb-6 px-4 py-1.5 border-primary/20 text-primary bg-primary/5 uppercase tracking-widest text-[10px] font-bold">
                             The Boltfy Blog
                         </Badge>
-                        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-8 bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent">
-                            Insights on <span className="italic text-primary">data & design.</span>
+                        <h1 className="text-5xl md:text-6xl font-bold tracking-tighter mb-8 text-foreground">
+                            Guides on forms, leads, and design
                         </h1>
                         <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                            Discover tips for building high-converting forms, automating your workflow, and the latest in design aesthetics.
+                            Practical guides on finishing more forms, collecting leads without a custom backend, and designing a form people can read.
                         </p>
                     </div>
                 </section>
@@ -98,8 +49,8 @@ export default function Blog() {
                 <section className="py-24 px-6">
                     <div className="max-w-7xl mx-auto">
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-                            {blogPosts.map((post) => (
-                                <Link key={post.id} to={`/blog/${post.slug}`} className="group">
+                            {blogArticles.map((post) => (
+                                <Link key={post.slug} to={`/blog/${post.slug}`} className="group">
                                     <Card className="h-full border-border bg-card/30 hover:bg-card transition-all duration-500 hover:-translate-y-2 overflow-hidden flex flex-col shadow-sm hover:shadow-2xl hover:border-primary/20">
                                         <div className="aspect-[16/10] overflow-hidden relative">
                                             <img
@@ -117,7 +68,7 @@ export default function Blog() {
                                             <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
                                                 <span className="flex items-center gap-1.5">
                                                     <Calendar className="h-3 w-3" />
-                                                    {post.date}
+                                                    {formatLongDate(post.published)}
                                                 </span>
                                                 <span className="flex items-center gap-1.5">
                                                     <Clock className="h-3 w-3" />
@@ -128,7 +79,7 @@ export default function Blog() {
                                                 {post.title}
                                             </h2>
                                             <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-6 flex-1">
-                                                {post.excerpt}
+                                                {post.description}
                                             </p>
                                             <div className="flex items-center justify-between pt-6 border-t border-border/50">
                                                 <div className="flex items-center gap-2">
@@ -152,12 +103,11 @@ export default function Blog() {
                 {/* Newsletter Callout */}
                 <section className="py-24 px-6 bg-primary/5 border-y border-primary/10">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h2 className="text-3xl font-bold mb-4">Never miss an update.</h2>
-                        <p className="text-muted-foreground mb-8">Join 2,000+ creators getting our weekly insights on form design and lead optimization.</p>
-                        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                            <Input placeholder="Enter your email" className="h-12 bg-background" />
-                            <Button className="h-12 px-8 bg-primary hover:bg-primary/90 shrink-0">Subscribe</Button>
-                        </div>
+                        <h2 className="text-3xl font-bold mb-4">Build the form these guides describe.</h2>
+                        <p className="text-muted-foreground mb-8">Create an account, publish a public link, and read the responses from your dashboard.</p>
+                        <Link to="/signup">
+                            <Button className="h-12 px-8 bg-primary hover:bg-primary/90">Create a free account</Button>
+                        </Link>
                     </div>
                 </section>
             </main>
