@@ -1,215 +1,46 @@
-# 🚀 Boltfy - Improvement Roadmap
+# 🚀 Boltfy — Status and Roadmap
 
-## ✅ Current Features
-- Dashboard with analytics (live, per-user data — no mock/hardcoded numbers)
-- Subscriber management (CRUD), scoped per-user via RLS
-- Custom form builder with drag-and-drop
-- Public form embedding (`/f/:slug`, iframe embed mode via `?embed=true`)
-- Email templates
-- Campaigns management, with real delivery via Resend (server-side)
-- Settings page
-- Authentication (signup/login/Google OAuth/password reset), protected routes,
-  per-user row-level security on every table
-- Unsubscribe flow for campaign recipients
+Last reviewed against the code, not against earlier versions of this file. Items are only ticked if they work end-to-end *and* are covered by a test or were exercised in a browser.
 
-## ✅ Recently Fixed (Security & Correctness Hardening)
-These were the platform's most serious gaps and are now resolved:
-- [x] **Data isolation**: every table now has owner-scoped RLS
-      (`supabase/migrations/20260711000000_secure_multitenant_rls.sql`).
-      Previously all tables used `USING (true)` policies — any client with
-      the public anon key could read/edit/delete *any* user's data.
-- [x] **Email key exposure**: Resend was called directly from the browser
-      with a `VITE_`-prefixed key, which ships into the client bundle.
-      Sending now goes through the `send-email` Supabase Edge Function,
-      where the key lives server-side only.
-- [x] **Public form submission spoofing**: the client used to set
-      `user_id` on submissions/subscribers itself — a malicious client could
-      attribute data to any user. Public writes now go through a
-      `SECURITY DEFINER` RPC (`submit_public_form`) that resolves the real
-      owner server-side.
-- [x] **Open-relay risk**: the form-notification email path resolves its
-      recipient server-side from `form_id`, so the edge function can't be
-      used to blast arbitrary addresses.
-- [x] **Campaign sending was fully mocked** — "Send Campaign" just wrote a
-      `status: 'sent'` row without emailing anyone, and there was no
-      `/unsubscribe` route despite emails linking to one. Both now work.
-- [x] Cross-tenant data leak in the Forms list (unscoped `custom_forms`
-      query returned every user's forms, since that table is intentionally
-      public-readable for the embed page).
-- [x] `types.ts` was saved as UTF-16LE, which is not valid TS/JS source
-      encoding — re-saved as UTF-8.
-- [x] Anti-spam honeypot + submit-timing check on public forms.
-- [x] `jspdf` upgraded off a version with critical CVEs (PDF export renders
-      subscriber-submitted, i.e. untrusted, data).
-- [x] CI (lint + typecheck + build) on every push/PR.
+## ✅ Working today
 
----
+- Auth (email/password, Google OAuth, password reset), protected routes, 30-min inactivity sign-out
+- Form builder, public form page, iframe embed, per-form notification email
+- Responses: live feed, per-form counts, search, CSV + PDF export (formula-injection safe)
+- Subscribers: real list management, CSV import/export, unsubscribe/resubscribe, newsletter forms add subscribers automatically
+- Campaigns: drafts, test send, merge tags, confirm-before-send, batch delivery, failure reporting, unsubscribe links, postal-address footer
+- Settings: profile, sender name / reply-to / postal address, account deletion
+- Row Level Security on every table, tested against a real Postgres in CI
+- Dashboard with real, server-side numbers
 
-## 🎯 HIGH PRIORITY IMPROVEMENTS (still open)
+## ⚠️ Known gaps (be aware before relying on them)
 
-### 1. 📊 Analytics depth
-**What to add**:
-- [ ] Campaign open/click tracking (requires a tracking pixel / link rewriting)
-- [ ] Export reports to CSV/PDF
+| Gap | Why it matters |
+|---|---|
+| **Edge functions are not integration-tested.** Only their pure helpers are. They type-check under Deno, but nothing in CI runs them against Supabase/Resend. | Send a **test campaign** after every deploy. |
+| **Large campaigns are limited by the function's wall-clock time.** A single send stops starting new batches after ~110 s (≈ a few thousand recipients, because Resend allows ~2 requests/s) and marks the campaign `failed` with a "send again to continue" message. Batches use idempotency keys so a retry should not re-deliver finished batches; that relies on Resend honouring the header and has not been verified. | For big lists, move sending to a queue (e.g. `pg_cron` + a worker). |
+| **No double opt-in.** Anyone can type another person's address into a newsletter form. | Hurts list quality and deliverability; some jurisdictions expect confirmation. |
+| **No bounce / complaint handling.** Hard bounces and spam complaints keep getting mailed. | Resend webhooks → mark subscribers `unsubscribed`/`bounced`. |
+| **Templates are an island.** You can create and delete templates but not edit them, and campaigns can't use them. | Wire "start from template" into Compose; add `/templates/:id`. |
+| **No open/click tracking.** `campaigns.open_rate` exists but is never filled; the UI doesn't show it. | Needs a tracking pixel / link redirect function. |
+| **No true "conversion" metric.** Needs form-view counting. | Add a `record_form_view` RPC and a counter. |
+| **Rate limits on login/signup are client-side only** (`security.ts`). | They deter nobody who scripts the API; Supabase's own auth rate limits apply. |
+| **One-click `List-Unsubscribe-Post`** is not implemented (only the `List-Unsubscribe` link). | Required by Gmail/Yahoo for bulk senders (>5k/day). |
+| `ai-commerce-agent/` is an unrelated project living in this repo. | Move it out when convenient. |
 
-### 2. ⚡ Bundle size
-**Why**: main JS chunk is ~1.5MB minified; `npm run build` warns about it
-**What to add**:
-- [ ] Route-level code splitting (`React.lazy`) for heavy pages
-      (TemplateEditor, FormEditor pull in `three`/`@react-three/*`)
-- [ ] `manualChunks` for vendor splitting
+## 🎯 Next up (suggested order)
 
----
+1. Wire templates into campaigns; add template editing
+2. Resend webhooks for bounces/complaints
+3. Double opt-in for newsletter forms (`subscribers.status = 'pending'` already exists)
+4. Queue-based sending + scheduled campaigns (`campaigns.status = 'scheduled'` already exists)
+5. Tags / segments
+6. Playwright E2E run against a local Supabase (`supabase start`) in CI
 
-## 🎨 MEDIUM PRIORITY IMPROVEMENTS
+## 💡 Later
 
-### 5. 📝 Email Template Editor
-**Current**: Basic template management
-**Improvements**:
-- [ ] Drag-and-drop email builder
-- [ ] Pre-designed templates library
-- [ ] Variables/placeholders ({subscriber.name})
-- [ ] Preview on different devices
-- [ ] HTML/code mode
+Webhooks/Zapier on submit, file-upload and multi-step form fields, form logic, i18n/RTL, A/B subject tests, CAPTCHA, GDPR data export.
 
-### 6. 🏷️ Tags & Segments
-**Why**: Better subscriber organization
-**What to add**:
-- [ ] Tag management
-- [ ] Auto-tagging based on form source
-- [ ] Segment builder (filters)
-- [ ] Target campaigns by segment
+## ❌ Correction to earlier notes
 
-### 7. 🤖 Automation Workflows
-**Why**: Manual work for every action
-**What to add**:
-- [ ] Welcome email sequences
-- [ ] Drip campaigns
-- [ ] Trigger-based emails
-- [ ] Workflow builder UI
-
-### 8. 📱 Mobile Responsiveness
-**Current**: Sidebar-based layout not mobile-friendly
-**Improvements**:
-- [ ] Mobile navigation (hamburger menu)
-- [ ] Responsive form builder
-- [ ] Touch-friendly drag-and-drop
-- [ ] Mobile dashboard
-
----
-
-## 💡 NICE TO HAVE IMPROVEMENTS
-
-### 9. 🔌 Integrations
-- [ ] Webhook support (send data on form submit)
-- [ ] Zapier integration
-- [ ] CRM integrations (HubSpot, Salesforce)
-- [ ] Slack notifications
-
-### 10. 🌍 Internationalization (i18n)
-- [ ] Multi-language support
-- [ ] RTL support
-- [ ] Timezone handling
-
-### 11. 🎨 More Form Features
-- [ ] File upload fields
-- [ ] Multi-step forms (wizard)
-- [ ] Form logic (show/hide pages)
-- [ ] Calculated fields
-- [ ] Rating/star fields
-- [ ] Signature field
-
-### 12. 📈 A/B Testing
-- [ ] Test different email subjects
-- [ ] Test send times
-- [ ] Landing page variants
-
-### 13. 🔒 Security Enhancements
-- [x] Rate limiting on form submissions (honeypot + submit-timing heuristic;
-      see `src/pages/PublicForm.tsx`)
-- [ ] CAPTCHA on forms (for more sophisticated bots than the honeypot catches)
-- [ ] GDPR data-export/deletion self-service tools
-
----
-
-## 🛠️ TECHNICAL IMPROVEMENTS
-
-### 14. Code Quality
-- [ ] Add unit tests (Vitest)
-- [ ] Add E2E tests (Playwright)
-- [ ] Error boundary components
-- [ ] Better error messages
-
-### 15. Performance
-- [ ] Lazy loading for routes
-- [ ] Image optimization
-- [ ] Virtual scrolling for large lists
-- [ ] Caching with React Query
-
-### 16. Developer Experience
-- [ ] Environment setup script
-- [ ] Docker support
-- [x] CI pipeline (`.github/workflows/ci.yml`: lint, typecheck, build)
-- [ ] Expanded documentation (architecture deep-dive, RLS model)
-
----
-
-## 📋 QUICK WINS (Can do today!)
-
-1. **Add loading skeletons** - Better UX while loading
-2. **Add empty states** - Guide users when no data
-3. **Add keyboard shortcuts** - Power user features
-4. ~~Add dark/light mode toggle~~ — done (`src/components/theme-provider.tsx` + `mode-toggle.tsx`, system/light/dark)
-5. ~~Add export buttons~~ — done (Subscribers page: CSV + PDF export)
-6. **Add confirmation dialogs** - Before delete actions
-7. **Add form validation feedback** - Real-time validation
-8. **Add success animations** - Celebrate actions
-
----
-
-## 🗂️ Suggested Project Structure Update
-
-```
-src/
-├── components/
-│   ├── auth/           # NEW: Auth components
-│   ├── common/         # NEW: Shared components
-│   ├── dashboard/
-│   ├── forms/
-│   ├── email/          # NEW: Email-related
-│   ├── layout/
-│   └── ui/
-├── features/           # NEW: Feature modules
-│   ├── auth/
-│   ├── campaigns/
-│   ├── forms/
-│   └── subscribers/
-├── hooks/
-├── lib/
-│   ├── api/           # NEW: API utilities
-│   ├── utils/
-│   └── validators/    # NEW: Zod schemas
-├── pages/
-├── services/          # NEW: Business logic
-│   ├── email.ts
-│   └── analytics.ts
-├── stores/            # NEW: State management
-└── types/             # NEW: Shared types
-```
-
----
-
-## 🚦 Implementation Priority (remaining work)
-
-| Priority | Feature | Effort | Impact |
-|----------|---------|--------|--------|
-| 1 | Mobile responsive layout | Low | Medium |
-| 2 | Bundle size / code splitting | Low | Medium |
-| 3 | Tags/Segments | Medium | Medium |
-| 4 | CAPTCHA on public forms | Low | Medium |
-| 5 | Automation workflows | High | High |
-| 6 | Unit/E2E test coverage | Medium | High |
-
-~~Authentication~~, ~~public form pages~~, ~~email sending~~, ~~real
-analytics~~, and ~~CSV/PDF export~~ (already in Subscribers) are done — see
-"Current Features" and "Recently Fixed" above.
+Earlier versions of this file said the main bundle was heavy because `TemplateEditor`/`FormEditor` "pull in `three`/`@react-three/*`". That was wrong: nothing in `src/` imported them. They have been removed from `package.json`. The real bundle fix was per-route code splitting (entry chunk 1.48 MB → 110 kB) and loading jsPDF only when exporting a PDF.

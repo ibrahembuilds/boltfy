@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ interface DashboardStats {
   totalForms: number;
   totalSubmissions: number;
   thisWeek: number;
+  activeSubscribers: number;
 }
 
 interface RecentSubmission {
@@ -32,11 +33,8 @@ interface RecentSubmission {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalForms: 0,
-    totalSubmissions: 0,
-    thisWeek: 0,
-  });
+  // null = not loaded (or failed): show a dash rather than a made-up zero.
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentSubmissions, setRecentSubmissions] = useState<RecentSubmission[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,72 +49,68 @@ export default function Dashboard() {
     return user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
   };
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
 
-    // Fetch forms count
-    const { data: forms } = await supabase
-      .from("custom_forms")
-      .select("id")
-      .eq("user_id", user?.id);
+    // One aggregate query for the counters (the old code counted the rows of a
+    // `.limit(5)` query, so "Responses" could never exceed 5) plus the latest few.
+    const [statsRes, recentRes] = await Promise.all([
+      supabase.rpc("get_dashboard_stats"),
+      supabase
+        .from("form_submissions")
+        .select("id, form_name, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ]);
 
-    // Fetch submissions
-    const { data: submissions } = await supabase
-      .from("form_submissions")
-      .select("id, form_name, created_at")
-      .eq("user_id", user?.id)
-      .order("created_at", { ascending: false })
-      .limit(5);
+    const row = statsRes.data?.[0];
+    if (statsRes.error || !row) {
+      console.error("Error loading dashboard stats:", statsRes.error);
+      setStats(null);
+    } else {
+      setStats({
+        totalForms: Number(row.total_forms),
+        totalSubmissions: Number(row.total_submissions),
+        thisWeek: Number(row.submissions_this_week),
+        activeSubscribers: Number(row.active_subscribers),
+      });
+    }
 
-    // Calculate this week's submissions
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-    const { data: weekSubmissions } = await supabase
-      .from("form_submissions")
-      .select("id")
-      .eq("user_id", user?.id)
-      .gte("created_at", oneWeekAgo.toISOString());
-
-    setStats({
-      totalForms: forms?.length || 0,
-      totalSubmissions: submissions?.length || 0,
-      thisWeek: weekSubmissions?.length || 0,
-    });
-
-    setRecentSubmissions(submissions || []);
+    setRecentSubmissions(recentRes.data || []);
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const fmt = (n: number | undefined) => (n === undefined ? "\u2014" : n.toLocaleString());
 
   const statCards = [
     {
       title: "Total Forms",
-      value: stats.totalForms,
+      value: fmt(stats?.totalForms),
       icon: FileText,
       gradient: "from-blue-500 to-cyan-500",
     },
     {
       title: "Responses",
-      value: stats.totalSubmissions,
-      icon: Users,
+      value: fmt(stats?.totalSubmissions),
+      icon: BarChart3,
       gradient: "from-purple-500 to-pink-500",
     },
     {
-      title: "This Week",
-      value: `+${stats.thisWeek}`,
+      title: "Last 7 Days",
+      value: stats ? `+${stats.thisWeek.toLocaleString()}` : "\u2014",
       icon: TrendingUp,
       gradient: "from-green-500 to-emerald-500",
     },
     {
-      title: "Conversion",
-      value: stats.totalForms > 0 ? `${Math.round((stats.totalSubmissions / (stats.totalForms * 10)) * 100)}%` : "0%",
-      icon: BarChart3,
+      title: "Active Subscribers",
+      value: fmt(stats?.activeSubscribers),
+      icon: Users,
       gradient: "from-orange-500 to-red-500",
     },
   ];

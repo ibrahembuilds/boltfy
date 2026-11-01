@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Save, Loader2, Code, Copy, Check, Eye, Database, Settings, Link2, Mail } from "lucide-react";
 import type { Json } from "@/integrations/supabase/types";
+import { resolveSlug, slugify } from "@/lib/slug";
 
 interface CustomForm {
   id: string;
@@ -48,13 +49,7 @@ export default function FormEditor() {
   const [activeBuilderTab, setActiveBuilderTab] = useState("fields");
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isNew && id) {
-      fetchForm(id);
-    }
-  }, [id, isNew]);
-
-  const fetchForm = async (formId: string) => {
+  const fetchForm = useCallback(async (formId: string) => {
     const { data, error } = await supabase
       .from("custom_forms")
       .select("*")
@@ -82,7 +77,13 @@ export default function FormEditor() {
 
     setFormId(data.id);
     setLoading(false);
-  };
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    if (!isNew && id) {
+      fetchForm(id);
+    }
+  }, [id, isNew, fetchForm]);
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -95,7 +96,14 @@ export default function FormEditor() {
       return;
     }
 
-    const formSlug = slug.trim() || name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const trimmedNotification = notificationEmail.trim();
+    if (trimmedNotification && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedNotification)) {
+      toast({ title: "Check the notification email", description: "That doesn't look like a valid email address.", variant: "destructive" });
+      return;
+    }
+
+    // URL-safe, and never empty (names with no Latin letters used to produce "" and collide)
+    const formSlug = resolveSlug(slug, name);
     setSaving(true);
 
     try {
@@ -106,7 +114,7 @@ export default function FormEditor() {
         fields: fields as unknown as Json,
         settings: {
           style,
-          notification_email: notificationEmail || user.email || null
+          notification_email: trimmedNotification || user.email || null
         } as unknown as Json,
         user_id: user.id,
       };
@@ -128,10 +136,17 @@ export default function FormEditor() {
           .eq("id", id);
 
         if (error) throw error;
+        setSlug(formSlug);
         toast({ title: "Form Saved", description: "Changes saved successfully" });
       }
     } catch (error) {
-      toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to save form", variant: "destructive" });
+      // PostgREST errors are plain objects, not Error instances.
+      const e = error as { code?: string; message?: string } | null;
+      const description =
+        e?.code === "23505"
+          ? "That URL is already taken by another form. Choose a different slug."
+          : e?.message || "Failed to save form";
+      toast({ title: "Could not save form", description, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -160,8 +175,7 @@ export default function FormEditor() {
 
   const getFormLink = (embed = false) => {
     // Priority: Saved Slug > Generated Slug from Name > Form ID
-    const s = slug.trim() || (name ? name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") : "");
-    const finalSlug = s || formId || id || "";
+    const finalSlug = slugify(slug) || slugify(name) || formId || id || "";
 
     // In some cases 'id' might be 'new', we don't want a link to /f/new
     if (finalSlug === "new") return "";
@@ -327,7 +341,7 @@ export default function FormEditor() {
                       className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Get email notifications when someone submits this form
+                      Get an email when someone submits this form. Leave empty to use your login email.
                     </p>
                   </div>
                 </CardContent>

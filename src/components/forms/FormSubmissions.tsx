@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -27,11 +27,7 @@ export function FormSubmissions({ formId, formName }: FormSubmissionsProps) {
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, [formId]);
-
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("form_submissions")
@@ -43,7 +39,11 @@ export function FormSubmissions({ formId, formName }: FormSubmissionsProps) {
       setSubmissions(data);
     }
     setLoading(false);
-  };
+  }, [formId]);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
 
   const getMetadataPreview = (metadata: Json) => {
     if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return "-";

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -40,16 +40,47 @@ export default function Forms() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [seenSubmissions, setSeenSubmissions] = useState<Set<string>>(new Set());
+  // `submissions` below is only the latest 100; this is the real total.
+  const [totalResponses, setTotalResponses] = useState(0);
+
+  const fetchData = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+
+    const [formsRes, subsRes, countsRes] = await Promise.all([
+      supabase.from("custom_forms").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("form_submissions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
+      supabase.rpc("get_form_submission_counts"),
+    ]);
+
+    // Real per-form totals from the database, not a count of the 100 rows we happen to have loaded.
+    const counts = new Map<string, number>();
+    (countsRes.data ?? []).forEach((c) => counts.set(c.form_id, Number(c.submissions)));
+
+    if (formsRes.data) {
+      setForms(formsRes.data.map((form) => ({ ...form, submission_count: counts.get(form.id) ?? 0 })));
+    }
+    if (subsRes.data) {
+      setSubmissions(subsRes.data);
+    }
+    setTotalResponses([...counts.values()].reduce((sum, n) => sum + n, 0));
+
+    setLoading(false);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchData();
-      const seen = localStorage.getItem(`seen_submissions_${user.id}`);
-      if (seen) {
-        setSeenSubmissions(new Set(JSON.parse(seen)));
+      try {
+        const seen = localStorage.getItem(`seen_submissions_${user.id}`);
+        if (seen) {
+          setSeenSubmissions(new Set(JSON.parse(seen)));
+        }
+      } catch {
+        // corrupted/blocked storage must not break the page
       }
     }
-  }, [user]);
+  }, [user, fetchData]);
 
   useEffect(() => {
     if (!user) return;
@@ -67,6 +98,12 @@ export default function Forms() {
         (payload) => {
           const newSubmission = payload.new as Submission;
           setSubmissions((prev) => [newSubmission, ...prev]);
+          setTotalResponses((n) => n + 1);
+          setForms((prev) =>
+            prev.map((f) =>
+              f.id === newSubmission.form_id ? { ...f, submission_count: (f.submission_count ?? 0) + 1 } : f
+            )
+          );
 
           toast({
             title: "New Response",
@@ -80,38 +117,6 @@ export default function Forms() {
       supabase.removeChannel(channel);
     };
   }, [user, toast]);
-
-  const fetchData = async () => {
-    if (!user) return;
-    setLoading(true);
-
-    const { data: formsData } = await supabase
-      .from("custom_forms")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    const { data: subsData } = await supabase
-      .from("form_submissions")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(100);
-
-    if (formsData) {
-      const formsWithCount = formsData.map((form) => ({
-        ...form,
-        submission_count: subsData?.filter((s) => s.form_id === form.id).length || 0,
-      }));
-      setForms(formsWithCount);
-    }
-
-    if (subsData) {
-      setSubmissions(subsData);
-    }
-
-    setLoading(false);
-  };
 
   const handleDelete = async (formId: string) => {
     const { error } = await supabase.from("custom_forms").delete().eq("id", formId);
@@ -193,7 +198,7 @@ export default function Forms() {
             </TabsTrigger>
             <TabsTrigger value="submissions" className="gap-1 sm:gap-2 text-xs sm:text-sm relative data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Database className="h-4 w-4" />
-              <span>Responses ({submissions.length})</span>
+              <span>Responses ({totalResponses})</span>
               {newSubmissionsCount > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
                   {newSubmissionsCount}
@@ -307,7 +312,7 @@ export default function Forms() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-slate-500">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {format(new Date(form.created_at), "MMM d, yyyy")}
@@ -315,7 +320,7 @@ export default function Forms() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="gap-1 h-7 text-xs text-slate-400 hover:text-white"
+                          className="gap-1 h-7 text-xs text-muted-foreground hover:text-foreground"
                           onClick={() => navigate(`/forms/${form.id}`)}
                         >
                           <Edit className="h-3 w-3" />
@@ -374,7 +379,7 @@ export default function Forms() {
                               variant="ghost"
                               size="sm"
                               onClick={(e) => { e.stopPropagation(); navigate(`/forms/${form.id}`); }}
-                              className="text-slate-400 hover:text-white"
+                              className="text-muted-foreground hover:text-foreground"
                             >
                               <Eye className="h-4 w-4 mr-1" />
                               View Form

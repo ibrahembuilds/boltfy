@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, FileText, Trash2, Copy, Eye, Loader2 } from "lucide-react";
+import { Plus, FileText, Trash2, Copy, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 
 interface Template {
@@ -25,18 +35,15 @@ export default function Templates() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchTemplates();
-    }
-  }, [user]);
+  const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from("email_templates")
         .select("*")
-        .eq("user_id", user?.id)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -51,7 +58,11 @@ export default function Templates() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
 
   const handleDelete = async (id: string, name: string) => {
     try {
@@ -165,10 +176,11 @@ export default function Templates() {
                         {template.subject || "No subject set"}
                       </CardDescription>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Duplicate ${template.name}`}
                         onClick={() => handleDuplicate(template)}
                       >
                         <Copy className="h-4 w-4" />
@@ -177,7 +189,8 @@ export default function Templates() {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(template.id, template.name)}
+                        aria-label={`Delete ${template.name}`}
+                        onClick={() => setTemplateToDelete(template)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -192,10 +205,6 @@ export default function Templates() {
                   </div>
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <span>Updated {format(new Date(template.updated_at), "MMM d, yyyy")}</span>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <Eye className="h-4 w-4" />
-                      Preview
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -203,6 +212,27 @@ export default function Templates() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!templateToDelete} onOpenChange={(open) => !open && setTemplateToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this template?</AlertDialogTitle>
+            <AlertDialogDescription>“{templateToDelete?.name}” will be permanently removed.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => {
+                if (templateToDelete) handleDelete(templateToDelete.id, templateToDelete.name);
+                setTemplateToDelete(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }
