@@ -54,8 +54,6 @@ interface CustomForm {
     description: string | null;
     fields: Json;
     settings: Json;
-    user_id: string;
-    owner_email?: string;
 }
 
 const defaultStyle: FormStyle = {
@@ -125,54 +123,44 @@ export default function PublicForm() {
     }, [isEmbed, loading, submitted]);
 
     useEffect(() => {
-        if (slug) {
-            fetchForm();
-        }
-    }, [slug]);
+        if (!slug) return;
+        let cancelled = false;
 
-    const fetchForm = async () => {
-        setLoading(true);
+        const load = async () => {
+            setLoading(true);
 
-        // Try slug first
-        let { data, error } = await supabase
-            .from("custom_forms")
-            .select("*")
-            .eq("slug", slug)
-            .maybeSingle();
+            // get_public_form exposes only what is needed to render and fill the
+            // form: no owner id, no notification address. It resolves a slug
+            // (or, for older links, a form id).
+            const { data, error } = await supabase.rpc("get_public_form", { p_slug: slug });
+            if (cancelled) return;
 
-        // Fallback to ID if slug lookup fails
-        if (!data) {
-            const { data: idData, error: idError } = await supabase
-                .from("custom_forms")
-                .select("*")
-                .eq("id", slug)
-                .maybeSingle();
-
-            if (idData) {
-                data = idData;
-                error = idError;
+            if (error) {
+                console.error("Error fetching form:", error);
             }
-        }
 
-        if (error) {
-            console.error("Error fetching form:", error);
-        }
+            const found = Array.isArray(data) ? data[0] : null;
+            if (!found) {
+                setForm(null);
+            } else {
+                setForm(found);
+                const fields = Array.isArray(found.fields) ? found.fields as unknown as FormField[] : [];
+                const initialData: Record<string, string | boolean> = {};
+                fields.forEach((field) => {
+                    initialData[field.id] = field.type === "checkbox" ? false : "";
+                });
+                setFormData(initialData);
+                shownAtRef.current = Date.now();
+            }
 
-        if (!data) {
-            setForm(null);
-        } else {
-            setForm(data);
-            const fields = Array.isArray(data.fields) ? data.fields as unknown as FormField[] : [];
-            const initialData: Record<string, string | boolean> = {};
-            fields.forEach((field) => {
-                initialData[field.id] = field.type === "checkbox" ? false : "";
-            });
-            setFormData(initialData);
-            shownAtRef.current = Date.now();
-        }
+            setLoading(false);
+        };
 
-        setLoading(false);
-    };
+        load();
+        return () => {
+            cancelled = true;
+        };
+    }, [slug]);
 
     const validateForm = () => {
         const fields = Array.isArray(form?.fields) ? form.fields as unknown as FormField[] : [];
@@ -232,52 +220,34 @@ export default function PublicForm() {
             const style = getFormStyle();
             const fields = Array.isArray(form.fields) ? form.fields as unknown as FormField[] : [];
 
-            // Find email and name fields (used when this is a subscriber form)
-            let email = "";
+            // A display name for newsletter signups (the address itself is taken
+            // from the form's email field on the server, and whether this form
+            // adds subscribers at all is decided by the form's own settings).
             let name = "";
-
             if (style.isSubscriberForm) {
                 fields.forEach((field) => {
                     const value = String(formData[field.id] || "");
-                    if (field.type === "email" && value) {
-                        email = value;
-                    }
                     if ((field.label.toLowerCase().includes("name") || field.type === "text") && value && !name) {
                         name = value;
                     }
                 });
             }
 
-            // Submission (and optional subscriber signup) is handled server-side
-            // via a SECURITY DEFINER RPC: the owner is resolved from form_id there,
-            // rather than trusting a client-supplied user_id.
-            const { error: submissionError } = await supabase.rpc("submit_public_form", {
+            const { data: submissionId, error: submissionError } = await supabase.rpc("submit_public_form", {
                 p_form_id: form.id,
                 p_metadata: formData as unknown as Json,
-                p_add_subscriber: style.isSubscriberForm && !!email,
-                p_subscriber_email: email || null,
                 p_subscriber_name: name || null,
             });
 
             if (submissionError) throw submissionError;
 
-            // Notify the form owner. The edge function resolves the actual
-            // recipient from form_id server-side (a no-op if the owner
-            // hasn't configured a notification_email), so this is safe to
-            // fire unconditionally.
-            try {
-                const formattedData: Record<string, string> = {};
-                fields.forEach((field) => {
-                    const value = formData[field.id];
-                    if (value !== undefined && value !== "" && value !== false) {
-                        formattedData[field.label] = String(value);
-                    }
+            // Tell the form owner. The server reads the stored submission and
+            // sends at most one email per submission; failures must never cost
+            // the visitor their successful submission, so this is not awaited.
+            if (typeof submissionId === "string") {
+                emailService.sendFormNotification(submissionId).catch((emailError) => {
+                    console.error("Failed to send email notification:", emailError);
                 });
-
-                await emailService.sendFormNotification(form.id, form.name, formattedData);
-            } catch (emailError) {
-                console.error("Failed to send email notification:", emailError);
-                // Don't fail the submission if email fails
             }
 
             setSubmitted(true);
@@ -357,8 +327,12 @@ export default function PublicForm() {
         }
     };
 
+    // Prefixed so a field called "website" can never clash with another element's id.
+    const inputIdFor = (fieldId: string) => `f_${fieldId}`;
+
     const renderField = (field: FormField, style: FormStyle) => {
         const hasError = !!errors[field.id];
+        const inputId = inputIdFor(field.id);
 
         const inputStyle = {
             borderRadius: `${style.borderRadius}px`,
@@ -371,6 +345,8 @@ export default function PublicForm() {
             case "textarea":
                 return (
                     <Textarea
+                        id={inputId}
+                        aria-invalid={hasError}
                         placeholder={field.placeholder}
                         value={String(formData[field.id] || "")}
                         onChange={(e) => handleInputChange(field.id, e.target.value)}
@@ -385,7 +361,7 @@ export default function PublicForm() {
                         value={String(formData[field.id] || "")}
                         onValueChange={(value) => handleInputChange(field.id, value)}
                     >
-                        <SelectTrigger style={inputStyle} className={hasError ? "ring-2 ring-red-200" : ""}>
+                        <SelectTrigger id={inputId} aria-invalid={hasError} style={inputStyle} className={hasError ? "ring-2 ring-red-200" : ""}>
                             <SelectValue placeholder="Select an option..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -401,13 +377,14 @@ export default function PublicForm() {
                 return (
                     <div className="flex items-center gap-3">
                         <Checkbox
-                            id={field.id}
+                            id={inputId}
+                            aria-invalid={hasError}
                             checked={Boolean(formData[field.id])}
                             onCheckedChange={(checked) => handleInputChange(field.id, Boolean(checked))}
                             style={{ borderColor: style.primaryColor }}
                         />
                         <label
-                            htmlFor={field.id}
+                            htmlFor={inputId}
                             className="text-sm leading-none cursor-pointer"
                             style={{ color: style.textColor }}
                         >
@@ -418,6 +395,8 @@ export default function PublicForm() {
             default:
                 return (
                     <Input
+                        id={inputId}
+                        aria-invalid={hasError}
                         type={field.type}
                         placeholder={field.placeholder}
                         value={String(formData[field.id] || "")}
@@ -601,10 +580,10 @@ export default function PublicForm() {
                         {/* Honeypot: hidden from sighted users and screen readers,
                             but visible to simple bots that auto-fill every field. */}
                         <div className="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
-                            <label htmlFor="website">Website</label>
+                            <label htmlFor="hp_website">Website</label>
                             <input
                                 type="text"
-                                id="website"
+                                id="hp_website"
                                 name="website"
                                 tabIndex={-1}
                                 autoComplete="off"
@@ -617,7 +596,7 @@ export default function PublicForm() {
                             <div key={field.id} className="space-y-2">
                                 {field.type !== "checkbox" && (
                                     <Label
-                                        htmlFor={field.id}
+                                        htmlFor={inputIdFor(field.id)}
                                         className="font-medium text-sm"
                                         style={{
                                             color: style.textColor,

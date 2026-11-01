@@ -17,6 +17,7 @@ export type Database = {
                     status: string
                     source: string | null
                     user_id: string | null
+                    unsubscribe_token: string
                     created_at: string
                     updated_at: string
                 }
@@ -27,6 +28,7 @@ export type Database = {
                     status?: string
                     source?: string | null
                     user_id?: string | null
+                    unsubscribe_token?: string
                     created_at?: string
                     updated_at?: string
                 }
@@ -37,6 +39,7 @@ export type Database = {
                     status?: string
                     source?: string | null
                     user_id?: string | null
+                    unsubscribe_token?: string
                     created_at?: string
                     updated_at?: string
                 }
@@ -86,6 +89,8 @@ export type Database = {
                     open_rate: number | null
                     sent_at: string | null
                     scheduled_for: string | null
+                    failed_count: number
+                    last_error: string | null
                     user_id: string | null
                     created_at: string
                     updated_at: string
@@ -100,6 +105,8 @@ export type Database = {
                     open_rate?: number | null
                     sent_at?: string | null
                     scheduled_for?: string | null
+                    failed_count?: number
+                    last_error?: string | null
                     user_id?: string | null
                     created_at?: string
                     updated_at?: string
@@ -114,6 +121,8 @@ export type Database = {
                     open_rate?: number | null
                     sent_at?: string | null
                     scheduled_for?: string | null
+                    failed_count?: number
+                    last_error?: string | null
                     user_id?: string | null
                     created_at?: string
                     updated_at?: string
@@ -172,6 +181,7 @@ export type Database = {
                     form_name: string | null
                     metadata: Json | null
                     user_id: string | null
+                    notified_at: string | null
                     created_at: string
                 }
                 Insert: {
@@ -181,6 +191,7 @@ export type Database = {
                     form_name?: string | null
                     metadata?: Json | null
                     user_id?: string | null
+                    notified_at?: string | null
                     created_at?: string
                 }
                 Update: {
@@ -190,6 +201,7 @@ export type Database = {
                     form_name?: string | null
                     metadata?: Json | null
                     user_id?: string | null
+                    notified_at?: string | null
                     created_at?: string
                 }
                 Relationships: [
@@ -208,6 +220,33 @@ export type Database = {
                         referencedColumns: ["id"]
                     }
                 ]
+            }
+            user_settings: {
+                Row: {
+                    user_id: string
+                    sender_name: string | null
+                    reply_to_email: string | null
+                    postal_address: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    user_id: string
+                    sender_name?: string | null
+                    reply_to_email?: string | null
+                    postal_address?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    user_id?: string
+                    sender_name?: string | null
+                    reply_to_email?: string | null
+                    postal_address?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
             }
             audit_logs: {
                 Row: {
@@ -251,18 +290,54 @@ export type Database = {
                 Args: {
                     p_form_id: string
                     p_metadata: Json
+                    /** @deprecated ignored by the server; the form's own settings decide */
                     p_add_subscriber?: boolean
+                    /** @deprecated ignored by the server; taken from the form's email field */
                     p_subscriber_email?: string | null
                     p_subscriber_name?: string | null
                 }
                 Returns: string
             }
+            get_public_form: {
+                Args: { p_slug: string }
+                Returns: {
+                    id: string
+                    name: string
+                    slug: string
+                    description: string | null
+                    fields: Json
+                    settings: Json
+                }[]
+            }
+            unsubscribe_by_token: {
+                Args: { p_token: string }
+                Returns: boolean
+            }
+            /** @deprecated legacy ?owner=&email= links; use unsubscribe_by_token */
             unsubscribe_email: {
                 Args: {
                     p_email: string
                     p_owner_id: string
                 }
                 Returns: boolean
+            }
+            get_dashboard_stats: {
+                Args: Record<PropertyKey, never>
+                Returns: {
+                    total_forms: number
+                    total_submissions: number
+                    submissions_this_week: number
+                    total_subscribers: number
+                    active_subscribers: number
+                }[]
+            }
+            get_form_submission_counts: {
+                Args: Record<PropertyKey, never>
+                Returns: {
+                    form_id: string
+                    submissions: number
+                    last_submission_at: string
+                }[]
             }
         }
         Enums: {

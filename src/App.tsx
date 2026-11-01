@@ -2,34 +2,37 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Analytics } from "@vercel/analytics/react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Pages
-import LandingPage from "./pages/LandingPage";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import Dashboard from "./pages/Dashboard";
-import Forms from "./pages/Forms";
-import FormEditor from "./pages/FormEditor";
-import Settings from "./pages/Settings";
-import PublicForm from "./pages/PublicForm";
-import Unsubscribe from "./pages/Unsubscribe";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import Subscribers from "./pages/Subscribers";
-import Contact from "./pages/Contact";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Campaigns from "./pages/Campaigns";
-import Templates from "./pages/Templates";
-import TemplateEditor from "./pages/TemplateEditor";
-import NotFound from "./pages/NotFound";
+// Pages: each is its own chunk, fetched on first visit (a single 1.5 MB bundle made every
+// visitor, including someone opening a public form, download the entire dashboard).
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Forms = lazy(() => import("./pages/Forms"));
+const FormEditor = lazy(() => import("./pages/FormEditor"));
+const Settings = lazy(() => import("./pages/Settings"));
+const PublicForm = lazy(() => import("./pages/PublicForm"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const Subscribers = lazy(() => import("./pages/Subscribers"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Campaigns = lazy(() => import("./pages/Campaigns"));
+const Templates = lazy(() => import("./pages/Templates"));
+const TemplateEditor = lazy(() => import("./pages/TemplateEditor"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,8 +62,17 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-label="Loading">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+    </div>
+  );
+}
+
 function AppRoutes() {
   return (
+    <Suspense fallback={<PageLoader />}>
     <Routes>
       {/* Public Landing Page */}
       <Route path="/" element={<LandingPage />} />
@@ -179,6 +191,7 @@ function AppRoutes() {
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   );
 }
 
@@ -190,7 +203,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <ScrollToTop />
-          <AppRoutes />
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
         </BrowserRouter>
         <Analytics />
       </TooltipProvider>
