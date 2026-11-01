@@ -1,1 +1,17 @@
 project_id = "lvdqgqnexeiuhmfbnrox"
+
+# Edge functions.
+#
+# verify_jwt is off because the gateway check only proves that the caller has
+# *some* valid Supabase key, and the anon/publishable key is public by design;
+# it also rejects the newer non-JWT "sb_publishable_..." keys. Each function
+# does its own, stronger check:
+#   send-email      "form-notification" is anonymous by design and is limited to
+#                   one email per stored submission; "send-campaign" and
+#                   "test-campaign" call auth.getUser() on the caller's token.
+#   delete-account  calls auth.getUser() and requires the caller's own email.
+[functions.send-email]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
