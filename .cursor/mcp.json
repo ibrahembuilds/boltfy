@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "boltfy": {
+      "command": "node",
+      "args": ["mcp/boltfy-server.mjs"],
+      "env": {
+        "BOLTFY_API_URL": "http://127.0.0.1:8787"
+      }
+    }
+  }
+}

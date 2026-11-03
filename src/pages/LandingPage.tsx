@@ -114,6 +114,7 @@ export default function LandingPage() {
                     </Link>
                     <div className="hidden md:flex items-center justify-center text-sm font-medium text-muted-foreground gap-8 flex-1 pl-12">
                          <a href="#features" className="hover:text-foreground transition-colors duration-200">Features</a>
+                         <Link to="/connect" className="hover:text-foreground transition-colors duration-200">Connect a site</Link>
                          <a href="#demo" className="hover:text-foreground transition-colors duration-200">Interactive Demo</a>
                          <a href="#testimonials" className="hover:text-foreground transition-colors duration-200">Testimonials</a>
                          <a href="#pricing" className="hover:text-foreground transition-colors duration-200">Pricing</a>
@@ -754,6 +755,7 @@ export default function LandingPage() {
                                         <ul className="grid sm:grid-cols-2 gap-4 border-t border-border/50 pt-6">
                                             {[
                                                 "Unlimited active forms",
+                                                "HTML page to API backend",
                                                 "Unlimited responses",
                                                 "Premium visual builder",
                                                 "Full templates library",
