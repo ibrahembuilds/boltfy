@@ -32,3 +32,6 @@ vite.config.ts.timestamp-*
 # local test output
 coverage
 test-results
+
+# Local Connect API key. The server writes this on first boot.
+.boltfy/
