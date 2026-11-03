@@ -314,6 +314,7 @@ export async function startConnectServer({
   rateLimit = DEFAULT_RATE,
   keyFile = path.resolve(process.cwd(), ".boltfy/dev-key"),
   llmsPath = path.resolve(process.cwd(), "llms.txt"),
+  docsPath = path.resolve(process.cwd(), "docs/platform.md"),
 } = {}) {
   await ensureDatabase(databaseUrl);
   const pool = new Pool({ connectionString: databaseUrl });
@@ -364,8 +365,8 @@ export async function startConnectServer({
         send(res, 200, { ok: true, service: "boltfy-connect" });
         return;
       }
-      if (req.method === "GET" && pathName === "/llms.txt") {
-        const text = await readFile(llmsPath, "utf8");
+      if (req.method === "GET" && (pathName === "/llms.txt" || pathName === "/docs/platform.md")) {
+        const text = await readFile(pathName === "/llms.txt" ? llmsPath : docsPath, "utf8");
         send(res, 200, text, "text/plain; charset=utf-8");
         return;
       }

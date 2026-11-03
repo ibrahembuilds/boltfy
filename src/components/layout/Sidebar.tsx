@@ -30,6 +30,7 @@ import {
   Mail,
   FileText,
   Plug,
+  BookOpen,
 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 
@@ -37,6 +38,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: FileCode, label: "Forms", path: "/forms" },
   { icon: Plug, label: "Connect", path: "/connect" },
+  { icon: BookOpen, label: "Docs", path: "/docs" },
   { icon: Users, label: "Subscribers", path: "/subscribers" },
   { icon: Mail, label: "Campaigns", path: "/campaigns" },
   { icon: FileText, label: "Templates", path: "/templates" },

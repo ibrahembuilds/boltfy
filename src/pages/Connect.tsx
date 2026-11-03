@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { ModeToggle } from "@/components/mode-toggle";
 import {
   checkHealth,
@@ -17,7 +15,7 @@ import {
   type ConnectEndpoint,
   type ConnectSubmission,
 } from "@/lib/connect-api";
-import { ArrowLeft, Copy, Loader2, Plug, Send, Trash2 } from "lucide-react";
+import { Copy, Loader2 } from "lucide-react";
 
 const SAMPLE_LANDING_HTML = `<!doctype html>
 <html>
@@ -47,15 +45,14 @@ export default function Connect() {
   const [apiUp, setApiUp] = useState<boolean | null>(null);
   const [apiKey, setApiKey] = useState("");
   const [needsKey, setNeedsKey] = useState(false);
-  const [name, setName] = useState("");
   const [html, setHtml] = useState("");
-  const [injectContact, setInjectContact] = useState(true);
   const [endpoints, setEndpoints] = useState<ConnectEndpoint[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<ConnectSubmission[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [showAnother, setShowAnother] = useState(false);
 
   const endpoint = endpoints.find((item) => item.slug === selected) ?? null;
 
@@ -109,11 +106,13 @@ export default function Connect() {
     setNotice("");
     setBusy(true);
     try {
-      const created = await createEndpoint(apiKey, { name: name || undefined, html, injectContact });
-      setNotice(`Endpoint ready. Any site can POST to ${created.ingestUrl}`);
+      const created = await createEndpoint(apiKey, { html, injectContact: true });
+      setHtml("");
+      setShowAnother(false);
+      setNotice("Link ready. Put it on your form, or try it below.");
       await refresh(apiKey, created.slug);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create the endpoint.");
+      setError(err instanceof Error ? err.message : "Could not create the link.");
     } finally {
       setBusy(false);
     }
@@ -131,7 +130,7 @@ export default function Connect() {
       ]);
       setSubmissions(rows.submissions);
       setEndpoints(data.endpoints);
-      setNotice("Sample submission stored. It is the first row below.");
+      setNotice("Test response saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Test failed.");
     } finally {
@@ -140,7 +139,7 @@ export default function Connect() {
   }
 
   async function onDelete(slug: string) {
-    if (!window.confirm("Delete this endpoint and its submissions?")) return;
+    if (!window.confirm("Delete this link and its responses?")) return;
     setBusy(true);
     setError("");
     try {
@@ -161,197 +160,160 @@ export default function Connect() {
   async function choose(slug: string) {
     setSelected(slug);
     setError("");
+    setNotice("");
     if (!apiKey) return;
     const rows = await listSubmissions(apiKey, slug);
     setSubmissions(rows.submissions);
   }
 
+  const composer = (
+    <div className="space-y-4">
+      <label htmlFor="endpoint-html" className="block text-sm font-medium">Paste your page</label>
+      <Textarea
+        id="endpoint-html"
+        value={html}
+        onChange={(event) => setHtml(event.target.value)}
+        className="min-h-[220px] font-mono text-xs"
+        placeholder="Paste the HTML of your landing page or form"
+      />
+      <p className="text-sm text-muted-foreground">No form on the page? Boltfy adds name, email, and message.</p>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={onCreate} disabled={busy || !apiKey || !html.trim()}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          Get my link
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setHtml(SAMPLE_LANDING_HTML)}
+        >
+          Try an example
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-4 h-4" /> Boltfy
-          </Link>
-          <div className="flex items-center gap-2 font-semibold">
-            <Plug className="w-4 h-4 text-primary" /> Connect
-          </div>
-          <ModeToggle />
+      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-5">
+          <Link to="/" className="text-sm font-semibold tracking-tight">Boltfy</Link>
+          <nav className="flex items-center gap-5 text-sm text-muted-foreground">
+            <Link to="/connect" className="text-foreground">Connect</Link>
+            <Link to="/docs" className="hover:text-foreground">Docs</Link>
+            <ModeToggle />
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
-        <div className="max-w-3xl space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">A backend for any HTML page</h1>
-          <p className="text-muted-foreground text-base leading-relaxed">
-            A static site can look finished and still have nowhere for a form to go. Paste the page.
-            Boltfy reads the form, gives you one POST URL, and puts every response in this dashboard.
-            An agent can do the same steps through the Boltfy MCP server.
+      <main className="mx-auto max-w-2xl space-y-8 px-5 py-12">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Connect a page</h1>
+          <p className="text-base leading-7 text-muted-foreground">
+            Paste HTML. Copy the link. Responses show up here.{" "}
+            <Link to="/docs" className="text-foreground underline-offset-4 hover:underline">How it works</Link>
           </p>
         </div>
 
         {apiUp === false && (
-          <Card className="border-destructive/40">
-            <CardHeader>
-              <CardTitle>Connect API is stopped</CardTitle>
-              <CardDescription>The page is up. The API that stores submissions is not.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <pre className="rounded-lg bg-muted px-4 py-3 text-sm overflow-x-auto">npm run connect</pre>
-              <p className="text-sm text-muted-foreground mt-3">Leave that running, then reload. Postgres must be accepting connections on localhost.</p>
-            </CardContent>
-          </Card>
+          <p className="rounded-xl border border-destructive/40 px-4 py-3 text-sm" role="alert">
+            The API is stopped. Run <code className="rounded bg-muted px-1">npm run connect</code>, then reload.
+          </p>
         )}
 
         {needsKey && (
-          <Card>
-            <CardHeader>
-              <CardTitle>API key</CardTitle>
-              <CardDescription>Paste the key from .boltfy/dev-key or from BOLTFY_API_KEY.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex gap-2">
-              <Input type="password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder="bfy_..." autoComplete="off" />
-              <Button onClick={() => refresh(apiKey).catch((err) => setError(err.message))}>Use key</Button>
-            </CardContent>
-          </Card>
+          <form
+            className="flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              refresh(apiKey).catch((err) => setError(err.message));
+            }}
+          >
+            <Input type="password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder="API key" autoComplete="off" aria-label="API key" />
+            <Button type="submit">Use key</Button>
+          </form>
         )}
 
         {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
         {notice && <p className="text-sm text-emerald-600 dark:text-emerald-400" role="status">{notice}</p>}
 
-        <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paste HTML</CardTitle>
-              <CardDescription>A full landing page or a single form. Field names become the API fields.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <label htmlFor="endpoint-name" className="text-sm font-medium">Name</label>
-                <Input id="endpoint-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Uses the page title if you leave this blank" />
-              </div>
-              <div className="space-y-1.5">
-                <label htmlFor="endpoint-html" className="text-sm font-medium">HTML</label>
-                <Textarea id="endpoint-html" value={html} onChange={(event) => setHtml(event.target.value)} className="min-h-[280px] font-mono text-xs" placeholder="<!doctype html>..." />
-              </div>
-              <label className="flex items-start gap-2 text-sm">
-                <input type="checkbox" className="mt-1" checked={injectContact} onChange={(event) => setInjectContact(event.target.checked)} />
-                <span>If this page has no form, add a name, email, and message form before creating the endpoint.</span>
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={onCreate} disabled={busy || !apiKey || !html.trim()}>
-                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plug className="w-4 h-4" />}
-                  Create endpoint
-                </Button>
-                <Button type="button" variant="outline" onClick={() => { setHtml(SAMPLE_LANDING_HTML); setName("Northwind Bakery"); setInjectContact(false); }}>
-                  Use bakery sample
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Endpoints</CardTitle>
-              <CardDescription>Each one is a backend for one page.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {endpoints.length === 0 && <p className="text-sm text-muted-foreground">Nothing connected yet.</p>}
-              {endpoints.map((item) => (
-                <button
-                  key={item.slug}
-                  type="button"
-                  onClick={() => choose(item.slug)}
-                  className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${item.slug === selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"}`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-medium">{item.name}</span>
-                    <Badge variant="secondary">{item.submissionCount}</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">{item.fields.map((field) => field.name).join(", ")}</p>
-                </button>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+        {!endpoint && composer}
 
         {endpoint && (
-          <section className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-start justify-between gap-4">
-                <div>
-                  <CardTitle>{endpoint.name}</CardTitle>
-                  <CardDescription>POST form fields here from the static site. Unknown fields are dropped.</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => onDelete(endpoint.slug)} disabled={busy}>
-                  <Trash2 className="w-4 h-4" /> Delete
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Input readOnly value={endpoint.ingestUrl} aria-label="Ingest URL" />
-                  <Button type="button" variant="outline" onClick={() => copy(endpoint.ingestUrl, "Ingest URL")}><Copy className="w-4 h-4" /> Copy URL</Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {endpoint.fields.map((field) => (
-                    <Badge key={field.name} variant="outline">{field.label} · {field.type}{field.required ? " · required" : ""}</Badge>
+          <section className="space-y-8">
+            {endpoints.length > 1 && (
+              <label className="block text-sm">
+                <span className="mb-1.5 block font-medium">Page</span>
+                <select
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  value={endpoint.slug}
+                  onChange={(event) => choose(event.target.value)}
+                >
+                  {endpoints.map((item) => (
+                    <option key={item.slug} value={item.slug}>{item.name} ({item.submissionCount})</option>
                   ))}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button type="button" onClick={onTest} disabled={busy}><Send className="w-4 h-4" /> Send a test submission</Button>
-                  <Button type="button" variant="outline" onClick={() => copy(endpoint.curl, "curl command")}><Copy className="w-4 h-4" /> Copy curl</Button>
-                  <Button type="button" variant="outline" onClick={() => copy(endpoint.rewrittenHtml, "Rewritten HTML")}><Copy className="w-4 h-4" /> Copy rewritten HTML</Button>
-                </div>
-                <pre className="rounded-lg bg-muted px-4 py-3 text-xs overflow-x-auto whitespace-pre-wrap">{endpoint.curl}</pre>
-              </CardContent>
-            </Card>
+                </select>
+              </label>
+            )}
 
-            <div className="grid lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Live page</CardTitle>
-                  <CardDescription>Submit this preview. The form posts to the ingest URL, then the row shows up on the right.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <iframe
-                    title="Connected page preview"
-                    sandbox="allow-forms allow-scripts allow-popups"
-                    srcDoc={endpoint.rewrittenHtml}
-                    className="w-full h-[420px] rounded-lg border border-border bg-white"
-                  />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Submissions</CardTitle>
-                  <CardDescription>This list refreshes every few seconds.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 max-h-[460px] overflow-y-auto">
-                  {submissions.length === 0 && <p className="text-sm text-muted-foreground">No responses yet. Send a test, or submit the preview.</p>}
-                  {submissions.map((row) => (
-                    <article key={row.id} className="rounded-xl border border-border px-3 py-3 text-sm space-y-1">
-                      <time className="text-xs text-muted-foreground">{new Date(row.createdAt).toLocaleString()}</time>
-                      {Object.entries(row.payload).filter(([key]) => key !== "_form").map(([key, value]) => (
-                        <p key={key}><span className="font-medium">{key}: </span>{value}</p>
-                      ))}
-                    </article>
-                  ))}
-                </CardContent>
-              </Card>
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold">{endpoint.name}</h2>
+              <label className="block text-sm font-medium" htmlFor="ingest-url">Your form link</label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input id="ingest-url" readOnly value={endpoint.ingestUrl} />
+                <Button type="button" variant="outline" onClick={() => copy(endpoint.ingestUrl, "Link")}>
+                  <Copy className="h-4 w-4" /> Copy link
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <Button type="button" variant="secondary" onClick={onTest} disabled={busy}>Send a test</Button>
+                <Button type="button" variant="outline" onClick={() => copy(endpoint.rewrittenHtml, "HTML")}>Copy HTML</Button>
+              </div>
             </div>
+
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold">Responses</h2>
+              {submissions.length === 0 && (
+                <p className="text-sm leading-6 text-muted-foreground">Nothing yet. Send a test, or submit the form below.</p>
+              )}
+              <div className="space-y-3">
+                {submissions.map((row) => (
+                  <article key={row.id} className="rounded-xl border border-border px-4 py-3 text-sm">
+                    <time className="text-xs text-muted-foreground">{new Date(row.createdAt).toLocaleString()}</time>
+                    <dl className="mt-2 space-y-1">
+                      {Object.entries(row.payload).filter(([key]) => key !== "_form").map(([key, value]) => (
+                        <div key={key} className="grid grid-cols-[7rem_1fr] gap-2">
+                          <dt className="text-muted-foreground">{key}</dt>
+                          <dd className="break-words">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <details className="rounded-xl border border-border px-4 py-3">
+              <summary className="cursor-pointer text-sm font-medium">Try the form</summary>
+              <iframe
+                title="Connected page preview"
+                sandbox="allow-forms allow-scripts allow-popups"
+                srcDoc={endpoint.rewrittenHtml}
+                className="mt-4 h-[420px] w-full rounded-lg border border-border bg-white"
+              />
+            </details>
+
+            <div className="flex items-center justify-between text-sm">
+              <button type="button" className="text-muted-foreground underline-offset-4 hover:underline" onClick={() => setShowAnother((open) => !open)}>
+                {showAnother ? "Hide" : "Connect another page"}
+              </button>
+              <button type="button" className="text-muted-foreground underline-offset-4 hover:underline" onClick={() => onDelete(endpoint.slug)} disabled={busy}>
+                Delete this link
+              </button>
+            </div>
+            {showAnother && composer}
           </section>
         )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>For agents</CardTitle>
-            <CardDescription>The same API the dashboard uses. Agents should read AGENTS.md and llms.txt, then start the MCP server.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <pre className="rounded-lg bg-muted px-4 py-3 overflow-x-auto">npm run connect{"\n"}npm run mcp</pre>
-            <p className="text-muted-foreground">Cursor config is in <code>.cursor/mcp.json</code>. Tools: create an endpoint from HTML, send a test, list submissions.</p>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );

@@ -34,6 +34,7 @@ const Templates = lazy(() => import("./pages/Templates"));
 const TemplateEditor = lazy(() => import("./pages/TemplateEditor"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Connect = lazy(() => import("./pages/Connect"));
+const Docs = lazy(() => import("./pages/Docs"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,6 +88,7 @@ function AppRoutes() {
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/connect" element={<Connect />} />
+      <Route path="/docs" element={<Docs />} />
 
       {/* Auth Routes */}
       <Route

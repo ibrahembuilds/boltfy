@@ -1,5 +1,7 @@
 # Boltfy
 
+Read `docs/platform.md` first. That is the explanation of how the platform works, for a person or an agent. The same page is served in the app at `/docs` and by the API at `GET /docs/platform.md`.
+
 Boltfy is a form builder (Vite, React, Supabase) plus **Connect**: a backend for any HTML page.
 
 Static sites fail at the form. Connect reads the HTML, rewrites each `<form>` to POST at Boltfy, and stores submissions where a person or an agent can read them.

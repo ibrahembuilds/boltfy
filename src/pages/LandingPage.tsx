@@ -115,6 +115,7 @@ export default function LandingPage() {
                     <div className="hidden md:flex items-center justify-center text-sm font-medium text-muted-foreground gap-8 flex-1 pl-12">
                          <a href="#features" className="hover:text-foreground transition-colors duration-200">Features</a>
                          <Link to="/connect" className="hover:text-foreground transition-colors duration-200">Connect a site</Link>
+                         <Link to="/docs" className="hover:text-foreground transition-colors duration-200">Docs</Link>
                          <a href="#demo" className="hover:text-foreground transition-colors duration-200">Interactive Demo</a>
                          <a href="#testimonials" className="hover:text-foreground transition-colors duration-200">Testimonials</a>
                          <a href="#pricing" className="hover:text-foreground transition-colors duration-200">Pricing</a>

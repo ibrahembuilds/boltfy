@@ -52,6 +52,10 @@ describe("connect API", () => {
     const health = await call("/health");
     expect(health.json.service).toBe("boltfy-connect");
 
+    const guide = await fetch(`${api.url}/docs/platform.md`);
+    expect(guide.status).toBe(200);
+    expect(await guide.text()).toContain("# How Boltfy works");
+
     const session = await call("/api/v1/dev/session");
     expect(session.json.apiKey).toBe(api.devKey);
 

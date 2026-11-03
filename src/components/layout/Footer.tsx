@@ -40,6 +40,16 @@ export const Footer = () => {
                                 </a>
                             </li>
                             <li>
+                                <Link to="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                    Docs
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/connect" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                    Connect a site
+                                </Link>
+                            </li>
+                            <li>
                                 <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                                     Blog
                                 </Link>

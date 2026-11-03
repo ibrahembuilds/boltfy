@@ -10,7 +10,10 @@ Boltfy gives an HTML website a backend. Paste a page, get one POST URL, and ever
 - Key: `.boltfy/dev-key` or `BOLTFY_API_KEY`. The key is not in this file.
 
 ## Read next
-- AGENTS.md — how an agent connects, tests, and reads submissions
+- docs/platform.md — how the platform works, for people and agents
+- GET /docs/platform.md — that same guide as plain text
+- The site page is /docs
+- AGENTS.md — repo commands and file map
 - GET /api/v1/openapi.json — HTTP contract
 - GET /health — liveness
 
