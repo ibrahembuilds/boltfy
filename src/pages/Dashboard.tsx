@@ -5,16 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Plus,
-  FileText,
-  TrendingUp,
-  Users,
-  BarChart3,
-  ArrowRight,
-  Clock,
-  Zap,
-} from "lucide-react";
+import { Plus, FileText, ArrowRight, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 interface DashboardStats {
@@ -89,30 +80,10 @@ export default function Dashboard() {
   const fmt = (n: number | undefined) => (n === undefined ? "\u2014" : n.toLocaleString());
 
   const statCards = [
-    {
-      title: "Total Forms",
-      value: fmt(stats?.totalForms),
-      icon: FileText,
-      gradient: "from-blue-500 to-cyan-500",
-    },
-    {
-      title: "Responses",
-      value: fmt(stats?.totalSubmissions),
-      icon: BarChart3,
-      gradient: "from-purple-500 to-pink-500",
-    },
-    {
-      title: "Last 7 Days",
-      value: stats ? `+${stats.thisWeek.toLocaleString()}` : "\u2014",
-      icon: TrendingUp,
-      gradient: "from-green-500 to-emerald-500",
-    },
-    {
-      title: "Active Subscribers",
-      value: fmt(stats?.activeSubscribers),
-      icon: Users,
-      gradient: "from-orange-500 to-red-500",
-    },
+    { title: "Forms", value: fmt(stats?.totalForms) },
+    { title: "Responses", value: fmt(stats?.totalSubmissions) },
+    { title: "Last 7 days", value: stats ? stats.thisWeek.toLocaleString() : "\u2014" },
+    { title: "Subscribers", value: fmt(stats?.activeSubscribers) },
   ];
 
   return (
@@ -125,7 +96,7 @@ export default function Dashboard() {
               {getGreeting()}, {getUserName()}
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Here's what's happening with your forms
+              Your forms and the responses they collected.
             </p>
           </div>
           <Button
@@ -140,20 +111,10 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((stat, index) => (
-            <Card
-              key={index}
-              className="bg-card border-border hover:border-primary/50 transition-all hover:-translate-y-1 shadow-sm"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
-                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-                  </div>
-                  <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
-                    <stat.icon className="h-6 w-6 text-white" />
-                  </div>
-                </div>
+            <Card key={stat.title} className="bg-card border-border shadow-none">
+              <CardContent className="p-5">
+                <p className="text-sm text-muted-foreground">{stat.title}</p>
+                <p className="mt-2 text-3xl font-semibold text-foreground">{stat.value}</p>
               </CardContent>
             </Card>
           ))}
@@ -183,14 +144,12 @@ export default function Dashboard() {
                   </div>
                   <h3 className="text-lg font-medium text-foreground mb-2">No responses yet</h3>
                   <p className="text-muted-foreground text-sm mb-6">
-                    Create a form and share it to start collecting data
+                    Create a form here, or connect a page you already have.
                   </p>
-                  <Button
-                    onClick={() => navigate("/forms/new")}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    Create Your First Form
-                  </Button>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                    <Button onClick={() => navigate("/forms/new")}>Create a form</Button>
+                    <Button variant="outline" onClick={() => navigate("/connect")}>Connect a page</Button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3 pt-4">
@@ -228,46 +187,10 @@ export default function Dashboard() {
             <CardHeader className="border-b border-border/50 pb-4">
               <CardTitle className="text-foreground text-lg">Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 pt-6">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-4 h-auto py-4 border-border hover:bg-muted/5 transition-all hover:scale-[1.02]"
-                onClick={() => navigate("/forms/new")}
-              >
-                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-md">
-                  <Plus className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold text-foreground">Create Form</p>
-                  <p className="text-xs text-muted-foreground">Start from scratch</p>
-                </div>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-4 h-auto py-4 border-border hover:bg-muted/50 transition-all hover:scale-[1.02] bg-background"
-                onClick={() => navigate("/forms")}
-              >
-                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
-                  <FileText className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold text-foreground">Manage Forms</p>
-                  <p className="text-xs text-muted-foreground">View and edit forms</p>
-                </div>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-4 h-auto py-4 border-border hover:bg-muted/50 transition-all hover:scale-[1.02] bg-background"
-                onClick={() => navigate("/settings")}
-              >
-                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-md">
-                  <Zap className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold text-foreground">Settings</p>
-                  <p className="text-xs text-muted-foreground">Customize your account</p>
-                </div>
-              </Button>
+            <CardContent className="space-y-2 pt-4">
+              <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/forms/new")}>Create a form</Button>
+              <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/forms")}>Your forms</Button>
+              <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/connect")}>Connect a page</Button>
             </CardContent>
           </Card>
         </div>

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ModeToggle } from "@/components/mode-toggle";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import {
   checkHealth,
   createEndpoint,
@@ -53,6 +53,9 @@ export default function Connect() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [showAnother, setShowAnother] = useState(false);
+  const [searchParams] = useSearchParams();
+  const wantExample = searchParams.get("example") === "1";
+  const htmlRef = useRef<HTMLTextAreaElement>(null);
 
   const endpoint = endpoints.find((item) => item.slug === selected) ?? null;
 
@@ -91,6 +94,14 @@ export default function Connect() {
     })();
     return () => { cancelled = true; };
   }, [refresh]);
+
+  useEffect(() => {
+    if (!wantExample) return;
+    setHtml(SAMPLE_LANDING_HTML);
+    setShowAnother(true);
+    const frame = window.requestAnimationFrame(() => htmlRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [wantExample]);
 
   useEffect(() => {
     if (!apiKey || !selected) return;
@@ -171,6 +182,7 @@ export default function Connect() {
       <label htmlFor="endpoint-html" className="block text-sm font-medium">Paste your page</label>
       <Textarea
         id="endpoint-html"
+        ref={htmlRef}
         value={html}
         onChange={(event) => setHtml(event.target.value)}
         className="min-h-[220px] font-mono text-xs"
@@ -195,16 +207,7 @@ export default function Connect() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-5">
-          <Link to="/" className="text-sm font-semibold tracking-tight">Boltfy</Link>
-          <nav className="flex items-center gap-5 text-sm text-muted-foreground">
-            <Link to="/connect" className="text-foreground">Connect</Link>
-            <Link to="/docs" className="hover:text-foreground">Docs</Link>
-            <ModeToggle />
-          </nav>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="mx-auto max-w-2xl space-y-8 px-5 py-12">
         <div className="space-y-2">
@@ -237,7 +240,7 @@ export default function Connect() {
         {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
         {notice && <p className="text-sm text-emerald-600 dark:text-emerald-400" role="status">{notice}</p>}
 
-        {!endpoint && composer}
+        {(!endpoint || showAnother) && composer}
 
         {endpoint && (
           <section className="space-y-8">
@@ -305,13 +308,12 @@ export default function Connect() {
 
             <div className="flex items-center justify-between text-sm">
               <button type="button" className="text-muted-foreground underline-offset-4 hover:underline" onClick={() => setShowAnother((open) => !open)}>
-                {showAnother ? "Hide" : "Connect another page"}
+                {showAnother ? "Hide the box" : "Connect another page"}
               </button>
               <button type="button" className="text-muted-foreground underline-offset-4 hover:underline" onClick={() => onDelete(endpoint.slug)} disabled={busy}>
                 Delete this link
               </button>
             </div>
-            {showAnother && composer}
           </section>
         )}
       </main>

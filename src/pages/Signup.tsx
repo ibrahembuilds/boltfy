@@ -113,26 +113,6 @@ export default function Signup() {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500">
-            {/* Background effects */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div
-                    className="absolute w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 dark:opacity-30 mix-blend-multiply dark:mix-blend-normal"
-                    style={{
-                        background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                        top: "5%",
-                        right: "15%",
-                    }}
-                />
-                <div
-                    className="absolute w-[400px] h-[400px] rounded-full blur-[100px] opacity-10 dark:opacity-20 mix-blend-multiply dark:mix-blend-normal"
-                    style={{
-                        background: "linear-gradient(135deg, #ec4899, #f43f5e)",
-                        bottom: "10%",
-                        left: "15%",
-                    }}
-                />
-            </div>
-
             {/* Back to home */}
             <Link to="/" className="absolute top-6 left-6 z-20">
                 <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">

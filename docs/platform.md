@@ -16,7 +16,7 @@ You create the form inside Boltfy, share a link, and read the answers in your ac
 
 You already have a website made of HTML. The form on that page has nowhere to send its answers. Connect is the backend.
 
-1. Open Connect.
+1. From the home page, choose Connect a page. Or choose Try an example.
 2. Paste the HTML of the page.
 3. Boltfy gives you one link.
 4. Point the form at that link, or copy the HTML Boltfy rewrote. The rewritten page already posts to Boltfy.
