@@ -88,6 +88,18 @@ cp .env.example .env     # fill in your Supabase values
 npm run dev              # http://localhost:8080
 ```
 
+### Connect: a backend for any HTML page
+
+The form builder above talks to Supabase. **Connect** does not. It is the API you give a static site: paste HTML, get a POST URL, read submissions at `/connect` or from an agent.
+
+```bash
+npm run connect          # API on http://127.0.0.1:8787, key in .boltfy/dev-key
+npm run dev              # then open http://localhost:8080/connect
+npm run mcp              # stdio MCP server (see AGENTS.md and .cursor/mcp.json)
+```
+
+Postgres must be running locally (`postgres` / `postgres` on `127.0.0.1`). `npm run dev:stack` starts the API and Vite together. Agent instructions live in `AGENTS.md` and `llms.txt`.
+
 ---
 
 ## ✅ Tests and CI

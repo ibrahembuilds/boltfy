@@ -13,8 +13,7 @@ export const Footer = () => {
                             <BrandLogo size="md" />
                         </Link>
                         <p className="text-muted-foreground text-sm max-w-xs leading-relaxed">
-                            Build beautiful forms and collect responses with ease.
-                            Free forever, no credit card required.
+                            Paste a page. Boltfy keeps the form responses.
                         </p>
                         <a
                             href="mailto:support@boltfy.io"
@@ -30,14 +29,14 @@ export const Footer = () => {
                         <h4 className="text-sm font-semibold text-foreground">Product</h4>
                         <ul className="space-y-3">
                             <li>
-                                <a href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                                    Features
-                                </a>
+                                <Link to="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                    How it works
+                                </Link>
                             </li>
                             <li>
-                                <a href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                                    How It Works
-                                </a>
+                                <Link to="/connect" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                    Connect a site
+                                </Link>
                             </li>
                             <li>
                                 <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">

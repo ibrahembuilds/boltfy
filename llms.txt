@@ -1,0 +1,25 @@
+# Boltfy Connect
+
+Boltfy gives an HTML website a backend. Paste a page, get one POST URL, and every form response lands in the dashboard.
+
+## Run
+- API: `npm run connect` (http://127.0.0.1:8787)
+- App: `npm run dev` then open http://127.0.0.1:8080/connect
+- Both: `npm run dev:stack`
+- MCP: `npm run mcp` (stdio). Cursor config: `.cursor/mcp.json`
+- Key: `.boltfy/dev-key` or `BOLTFY_API_KEY`. The key is not in this file.
+
+## Read next
+- docs/platform.md — how the platform works, for people and agents
+- GET /docs/platform.md — that same guide as plain text
+- The site page is /docs
+- AGENTS.md — repo commands and file map
+- GET /api/v1/openapi.json — HTTP contract
+- GET /health — liveness
+
+## Rules
+- Public ingest: POST /api/v1/ingest/{slug} as form-encoded, multipart, or JSON
+- Management routes need `Authorization: Bearer <key>`
+- Only named fields from the HTML are stored
+- A filled `_boltfy_hp` field is dropped (honeypot)
+- Ask for `Accept: application/json` when you want JSON instead of the thank-you page
